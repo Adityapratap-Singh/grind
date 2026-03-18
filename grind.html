@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Grind OS">
+<meta name="theme-color" content="#8b7cf8">
+<title>Grind OS</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════════════ */
+:root{
+  --bg:#0c0c0e;--s1:#131316;--s2:#1a1a1f;--s3:#222228;--s4:#2a2a32;
+  --b1:rgba(255,255,255,0.055);--b2:rgba(255,255,255,0.10);--b3:rgba(255,255,255,0.16);
+  --tx:#ededf0;--t2:#9898a8;--t3:#5c5c70;--t4:#3a3a48;
+  --pu:#8b7cf8;--pu2:#a99bff;--or:#f07040;--gr:#3de0a0;--go:#f5c842;
+  --re:#f05060;--bl:#4ba6f5;--pk:#e060b0;--te:#40d0c8;
+  --r6:6px;--r8:8px;--r12:12px;--r16:16px;--r20:20px;--r24:24px;
+  --font:'DM Sans',sans-serif;--serif:'Instrument Serif',serif;--mono:'JetBrains Mono',monospace;
+  --shadow:0 2px 16px rgba(0,0,0,0.35);
+  --transition:all 0.18s cubic-bezier(.4,0,.2,1);
+}
+[data-theme="light"]{
+  --bg:#f5f5f7;--s1:#ffffff;--s2:#f0f0f4;--s3:#e8e8ee;--s4:#dddde6;
+  --b1:rgba(0,0,0,0.06);--b2:rgba(0,0,0,0.10);--b3:rgba(0,0,0,0.16);
+  --tx:#1a1a2e;--t2:#5a5a7a;--t3:#9898aa;--t4:#c4c4d0;
+  --shadow:0 2px 16px rgba(0,0,0,0.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;height:100%;}
+body{background:var(--bg);color:var(--tx);font-family:var(--font);font-size:14px;line-height:1.5;min-height:100vh;overflow-x:hidden;transition:background 0.3s,color 0.3s;}
+::selection{background:rgba(139,124,248,0.3);}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:99px;}
+
+/* ══════════════════════════════════════════════
+   LAYOUT — SIDEBAR + MAIN
+══════════════════════════════════════════════ */
+.shell{display:grid;grid-template-columns:232px 1fr;min-height:100vh;}
+@media(max-width:768px){.shell{grid-template-columns:1fr;}.sidebar{display:none !important;}.mob-nav{display:flex !important;}}
+
+/* SIDEBAR */
+.sidebar{background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;z-index:50;}
+.logo{padding:22px 20px;border-bottom:1px solid var(--b1);}
+.logo-wordmark{font-family:var(--serif);font-size:22px;font-style:italic;letter-spacing:-.3px;}
+.logo-wordmark em{color:var(--pu);font-style:italic;}
+.logo-tag{font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:2px;letter-spacing:.05em;}
+.nav-sec{padding:14px 10px 0;}
+.nav-lbl{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase;padding:0 8px;margin-bottom:5px;}
+.nav-btn{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r8);cursor:pointer;transition:var(--transition);margin-bottom:1px;font-size:13px;color:var(--t2);font-weight:500;border:none;background:transparent;width:100%;text-align:left;}
+.nav-btn:hover{background:var(--s2);color:var(--tx);}
+.nav-btn.on{background:var(--s2);color:var(--tx);}
+.nav-btn.on .ni{opacity:1;}
+.ni{font-size:15px;width:18px;text-align:center;flex-shrink:0;opacity:.6;}
+.nav-badge{margin-left:auto;font-family:var(--mono);font-size:9px;background:rgba(139,124,248,.15);color:var(--pu);padding:1px 6px;border-radius:99px;}
+.sb-foot{margin-top:auto;padding:14px 10px;border-top:1px solid var(--b1);display:flex;flex-direction:column;gap:8px;}
+.sb-stat-row{display:flex;gap:6px;}
+.sb-stat{flex:1;background:var(--s2);border-radius:var(--r8);padding:8px 10px;}
+.sb-stat-v{font-size:18px;font-weight:700;line-height:1;color:var(--tx);}
+.sb-stat-l{font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:1px;}
+.sb-actions{display:flex;gap:5px;}
+.icon-btn{width:32px;height:32px;border:1px solid var(--b1);background:var(--s2);border-radius:var(--r8);cursor:pointer;font-size:14px;transition:var(--transition);display:flex;align-items:center;justify-content:center;}
+.icon-btn:hover{background:var(--s3);border-color:var(--b2);}
+
+/* MOBILE NAV */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--s1);border-top:1px solid var(--b1);padding:6px 2px calc(6px + env(safe-area-inset-bottom));gap:1px;z-index:200;overflow-x:auto;backdrop-filter:blur(20px);}
+.mn-btn{flex:1;min-width:50px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 4px;border-radius:var(--r8);cursor:pointer;border:none;background:transparent;font-family:var(--font);color:var(--t3);font-size:9px;font-weight:500;transition:var(--transition);}
+.mn-btn.on{color:var(--pu);}
+.mn-icon{font-size:18px;}
+
+/* MAIN */
+.main{padding:28px 32px 32px;max-width:900px;width:100%;}
+@media(max-width:768px){.main{padding:16px 14px 90px;}}
+.page{display:none;animation:fadein .2s ease;}.page.on{display:block;}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ══════════════════════════════════════════════
+   TYPOGRAPHY
+══════════════════════════════════════════════ */
+.page-title{font-family:var(--serif);font-size:28px;font-style:italic;margin-bottom:2px;letter-spacing:-.3px;}
+.page-sub{font-size:12px;color:var(--t3);font-family:var(--mono);margin-bottom:20px;}
+.sec-label{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
+
+/* ══════════════════════════════════════════════
+   CARDS
+══════════════════════════════════════════════ */
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r16);padding:18px 20px;margin-bottom:12px;transition:border-color .2s;}
+.card:hover{border-color:var(--b2);}
+.card.flush{padding:0;overflow:hidden;}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px;flex-wrap:wrap;}
+.card-title{font-size:14px;font-weight:600;}
+.card-sub{font-size:11px;color:var(--t3);}
+.card-accent{border-top:2px solid var(--ac,var(--pu));}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:520px){.g2{grid-template-columns:1fr;}.g4{grid-template-columns:1fr 1fr;}}
+
+/* ══════════════════════════════════════════════
+   STAT CARDS
+══════════════════════════════════════════════ */
+.stat{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r12);padding:14px 16px;position:relative;overflow:hidden;transition:var(--transition);}
+.stat:hover{border-color:var(--b2);transform:translateY(-1px);}
+.stat::before{content:'';position:absolute;inset:0 0 auto;height:2px;background:var(--c,var(--pu));}
+.stat-l{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
+.stat-v{font-size:26px;font-weight:700;line-height:1;color:var(--c,var(--tx));}
+.stat-s{font-size:11px;color:var(--t3);margin-top:3px;}
+.stat-trend{position:absolute;top:12px;right:12px;font-size:11px;font-family:var(--mono);}
+
+/* ══════════════════════════════════════════════
+   PROGRESS BARS
+══════════════════════════════════════════════ */
+.prog{height:4px;background:var(--b1);border-radius:99px;overflow:hidden;}
+.prog-f{height:100%;border-radius:99px;background:var(--c,var(--pu));transition:width .6s cubic-bezier(.4,0,.2,1);}
+.prog.thick{height:8px;}
+.prog.glow .prog-f{box-shadow:0 0 8px var(--c,var(--pu));}
+
+/* ══════════════════════════════════════════════
+   TASKS
+══════════════════════════════════════════════ */
+.task-list{display:flex;flex-direction:column;gap:5px;}
+.task{display:flex;align-items:flex-start;gap:10px;padding:9px 11px;background:var(--s2);border-radius:var(--r8);cursor:pointer;transition:var(--transition);border:1px solid transparent;}
+.task:hover{border-color:var(--b2);background:var(--s3);}
+.task.done{opacity:.45;}
+.task.done .tt{text-decoration:line-through;}
+.tcb{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--b2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:9px;transition:var(--transition);}
+.task.done .tcb{background:var(--gr);border-color:var(--gr);color:#000;}
+.tt{font-size:13px;flex:1;line-height:1.4;}
+.txp{font-family:var(--mono);font-size:10px;color:var(--pu);flex-shrink:0;}
+.tdiff{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:4px;flex-shrink:0;}
+.tdiff.easy{background:rgba(61,224,160,.12);color:var(--gr);}
+.tdiff.med{background:rgba(245,200,66,.12);color:var(--go);}
+.tdiff.hard{background:rgba(240,80,96,.12);color:var(--re);}
+
+/* ══════════════════════════════════════════════
+   PILLS / TAGS
+══════════════════════════════════════════════ */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:500;border:1px solid;}
+.p-pu{background:rgba(139,124,248,.10);color:var(--pu);border-color:rgba(139,124,248,.2);}
+.p-or{background:rgba(240,112,64,.10);color:var(--or);border-color:rgba(240,112,64,.2);}
+.p-gr{background:rgba(61,224,160,.08);color:var(--gr);border-color:rgba(61,224,160,.18);}
+.p-go{background:rgba(245,200,66,.10);color:var(--go);border-color:rgba(245,200,66,.2);}
+.p-bl{background:rgba(75,166,245,.08);color:var(--bl);border-color:rgba(75,166,245,.18);}
+.p-pk{background:rgba(224,96,176,.08);color:var(--pk);border-color:rgba(224,96,176,.18);}
+.p-re{background:rgba(240,80,96,.08);color:var(--re);border-color:rgba(240,80,96,.18);}
+.p-te{background:rgba(64,208,200,.08);color:var(--te);border-color:rgba(64,208,200,.18);}
+
+/* ══════════════════════════════════════════════
+   BUTTONS
+══════════════════════════════════════════════ */
+.btn{padding:8px 16px;border-radius:var(--r8);border:1px solid var(--b2);background:transparent;color:var(--t2);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{background:var(--s2);color:var(--tx);border-color:var(--b3);}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--pu);border-color:var(--pu);color:#fff;}
+.btn-primary:hover{opacity:.88;color:#fff;}
+.btn-gr{background:rgba(61,224,160,.14);border-color:rgba(61,224,160,.28);color:var(--gr);}
+.btn-or{background:rgba(240,112,64,.12);border-color:rgba(240,112,64,.24);color:var(--or);}
+.btn-ai{background:linear-gradient(135deg,rgba(139,124,248,.2),rgba(61,224,160,.12));border-color:rgba(139,124,248,.3);color:var(--pu);}
+.btn-wa{background:#25d366;border-color:#25d366;color:#fff;}
+.btn-wa:hover{background:#1eb85a;color:#fff;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.btn-full{width:100%;justify-content:center;}
+
+/* ══════════════════════════════════════════════
+   AI BLOCK
+══════════════════════════════════════════════ */
+.ai-wrap{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r12);padding:14px 16px;margin-top:10px;}
+.ai-lbl{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;color:var(--t3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--pu);animation:aipulse 1.6s ease infinite;}
+@keyframes aipulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+.ai-out{font-size:13px;color:var(--t2);line-height:1.75;white-space:pre-wrap;word-break:break-word;min-height:40px;}
+.ai-out.loading::before{content:'';display:inline-block;width:14px;height:14px;border:2px solid rgba(139,124,248,.3);border-top-color:var(--pu);border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══════════════════════════════════════════════
+   ONBOARDING
+══════════════════════════════════════════════ */
+.onboard-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(12px);}
+.onboard-card{background:var(--s1);border:1px solid var(--b2);border-radius:var(--r24);padding:32px 28px;max-width:420px;width:100%;}
+.onboard-step{display:none;}.onboard-step.on{display:block;}
+.ob-title{font-family:var(--serif);font-size:26px;font-style:italic;margin-bottom:6px;}
+.ob-sub{font-size:13px;color:var(--t2);margin-bottom:22px;line-height:1.6;}
+.ob-input{width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r8);color:var(--tx);font-family:var(--font);font-size:15px;padding:11px 14px;outline:none;transition:border-color .2s;margin-bottom:10px;}
+.ob-input:focus{border-color:var(--pu);}
+.ob-dots{display:flex;gap:6px;justify-content:center;margin-top:18px;}
+.ob-dot{width:6px;height:6px;border-radius:50%;background:var(--b2);transition:var(--transition);}
+.ob-dot.on{background:var(--pu);width:18px;border-radius:99px;}
+
+/* ══════════════════════════════════════════════
+   PANIC MODE
+══════════════════════════════════════════════ */
+.panic-banner{background:linear-gradient(135deg,rgba(240,80,96,.15),rgba(245,200,66,.08));border:1px solid rgba(240,80,96,.3);border-radius:var(--r12);padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.panic-text{font-size:13px;font-weight:600;color:var(--re);}
+.panic-sub{font-size:11px;color:var(--t2);margin-top:2px;}
+
+/* ══════════════════════════════════════════════
+   TIMETABLE SLOTS
+══════════════════════════════════════════════ */
+.tt-slot{display:flex;gap:14px;padding:13px 16px;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r12);margin-bottom:8px;transition:var(--transition);}
+.tt-slot:hover{border-color:var(--b2);transform:translateX(2px);}
+.tt-time{font-family:var(--mono);font-size:10px;color:var(--t3);min-width:50px;padding-top:2px;flex-shrink:0;line-height:1.6;}
+.tt-body{flex:1;}
+.tt-subj{font-size:10px;font-weight:600;margin-bottom:3px;display:flex;align-items:center;gap:6px;}
+.tt-topic{font-size:14px;font-weight:600;margin-bottom:5px;}
+.tt-explain{font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:6px;}
+.tt-tip{font-family:var(--mono);font-size:11px;padding:5px 9px;border-radius:6px;background:rgba(255,255,255,.04);color:var(--t2);line-height:1.5;}
+.tt-brk{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--s2);border-radius:var(--r8);margin-bottom:7px;font-size:12px;color:var(--t3);border:1px dashed var(--b1);}
+
+/* ══════════════════════════════════════════════
+   FITNESS
+══════════════════════════════════════════════ */
+.ex-card{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r12);padding:13px 15px;margin-bottom:7px;display:flex;gap:12px;align-items:flex-start;}
+.ex-num{width:26px;height:26px;border-radius:var(--r6);background:rgba(139,124,248,.15);color:var(--pu);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono);}
+.ex-body{flex:1;}
+.ex-name{font-size:13px;font-weight:600;margin-bottom:2px;}
+.ex-sets{font-family:var(--mono);font-size:11px;color:var(--go);margin-bottom:3px;}
+.ex-note{font-size:12px;color:var(--t2);line-height:1.5;}
+.ex-done{width:20px;height:20px;border-radius:var(--r6);border:1.5px solid var(--b2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;transition:var(--transition);flex-shrink:0;}
+.ex-done.on{background:var(--gr);border-color:var(--gr);color:#000;}
+.wed-card{background:linear-gradient(135deg,rgba(224,96,176,.1),rgba(245,200,66,.07));border:1px solid rgba(224,96,176,.2);border-radius:var(--r16);padding:16px 20px;margin-bottom:14px;}
+.wed-title{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--pk);margin-bottom:8px;}
+.wed-days{font-size:42px;font-weight:700;color:var(--pk);line-height:1;}
+.wed-units{display:flex;gap:16px;margin-top:6px;}
+.wed-unit{text-align:center;}
+.wed-unit-n{font-size:20px;font-weight:700;color:var(--pk);}
+.wed-unit-l{font-family:var(--mono);font-size:9px;color:var(--t3);}
+.proj-bar{margin-top:12px;}
+.proj-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--t2);margin-bottom:4px;}
+.body-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.met-wrap{display:flex;flex-direction:column;gap:3px;}
+.met-lbl{font-family:var(--mono);font-size:9px;color:var(--t3);text-transform:uppercase;}
+.met-in{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r8);color:var(--tx);font-family:var(--mono);font-size:15px;font-weight:600;padding:8px 10px;width:100%;outline:none;transition:border-color .2s;}
+.met-in:focus{border-color:var(--pu);}
+
+/* ══════════════════════════════════════════════
+   SYLLABUS
+══════════════════════════════════════════════ */
+.syl-sub{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r16);margin-bottom:10px;overflow:hidden;}
+.syl-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;transition:background .15s;}
+.syl-hdr:hover{background:var(--s2);}
+.syl-hdr-l{display:flex;align-items:center;gap:10px;}
+.syl-hdr-name{font-size:14px;font-weight:600;}
+.syl-body{padding:0 16px 14px;display:none;}
+.syl-body.open{display:block;}
+.unit-b{background:var(--s2);border-radius:var(--r12);border-left:3px solid var(--b3);padding:12px 14px;margin-bottom:8px;}
+.unit-title{font-size:13px;font-weight:600;margin-bottom:4px;}
+.unit-topics{font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:6px;}
+.unit-bb{font-family:var(--mono);font-size:11px;background:rgba(61,224,160,.06);border:1px solid rgba(61,224,160,.12);border-radius:var(--r8);padding:8px 10px;color:var(--gr);line-height:1.7;}
+
+/* ══════════════════════════════════════════════
+   PROBLEM TRACKER
+══════════════════════════════════════════════ */
+.diff-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.diff-card{flex:1;min-width:80px;background:var(--s2);border-radius:var(--r8);padding:10px 12px;border:1px solid var(--b1);}
+.diff-n{font-size:22px;font-weight:700;line-height:1;}
+.diff-l{font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:2px;}
+.diff-btns{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.diff-btn{padding:6px 14px;border-radius:var(--r8);border:1px solid var(--b1);background:var(--s2);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:var(--transition);}
+.diff-btn:hover{border-color:var(--b2);}
+.diff-btn.easy-b:hover,.diff-btn.easy-b.sel{background:rgba(61,224,160,.15);border-color:rgba(61,224,160,.3);color:var(--gr);}
+.diff-btn.med-b:hover,.diff-btn.med-b.sel{background:rgba(245,200,66,.15);border-color:rgba(245,200,66,.3);color:var(--go);}
+.diff-btn.hard-b:hover,.diff-btn.hard-b.sel{background:rgba(240,80,96,.15);border-color:rgba(240,80,96,.3);color:var(--re);}
+
+/* ══════════════════════════════════════════════
+   POMODORO
+══════════════════════════════════════════════ */
+.pomo-ring{position:relative;width:150px;height:150px;margin:0 auto 14px;}
+.psvg{transform:rotate(-90deg);}
+.parc-bg{fill:none;stroke:var(--b1);stroke-width:8;}
+.parc{fill:none;stroke:var(--pu);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1s linear,stroke .3s;}
+.pomo-n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:26px;font-weight:600;}
+.pomo-mode{text-align:center;font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;}
+.pdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--b2);margin:0 2px;}
+.pdot.on{background:var(--pu);}
+.music-btn{display:flex;align-items:center;gap:6px;padding:7px 12px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r8);cursor:pointer;font-size:12px;color:var(--t2);transition:var(--transition);text-decoration:none;}
+.music-btn:hover{border-color:var(--b2);color:var(--tx);}
+
+/* ══════════════════════════════════════════════
+   JOURNAL + BADGES + PROGRESS
+══════════════════════════════════════════════ */
+.j-area{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r12);color:var(--tx);font-family:var(--font);font-size:13px;padding:12px 14px;resize:vertical;min-height:100px;outline:none;line-height:1.65;}
+.j-area:focus{border-color:var(--pu);}
+.j-area::placeholder{color:var(--t3);}
+.j-entry{border-left:2px solid var(--pu);padding-left:12px;margin-bottom:14px;}
+.j-date{font-family:var(--mono);font-size:10px;color:var(--t3);margin-bottom:4px;}
+.j-text{font-size:13px;color:var(--t2);line-height:1.65;}
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;}
+.badge{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r12);padding:14px 10px;text-align:center;transition:var(--transition);}
+.badge.on{background:rgba(139,124,248,.1);border-color:rgba(139,124,248,.28);}
+.badge.on:hover{transform:translateY(-2px);}
+.badge-icon{font-size:24px;margin-bottom:5px;display:block;filter:grayscale(1) opacity(.2);transition:filter .3s;}
+.badge.on .badge-icon{filter:none;}
+.badge-name{font-size:11px;font-weight:600;color:var(--t3);}
+.badge.on .badge-name{color:var(--tx);}
+.badge-desc{font-size:9px;color:var(--t3);margin-top:2px;font-family:var(--mono);}
+.hmap{display:grid;grid-template-columns:repeat(13,1fr);gap:3px;}
+.hcol{display:grid;grid-template-rows:repeat(7,1fr);gap:3px;}
+.hc{aspect-ratio:1;border-radius:2px;background:var(--b1);}
+.hc.h1{background:rgba(139,124,248,.2);}
+.hc.h2{background:rgba(139,124,248,.5);}
+.hc.h3{background:rgba(139,124,248,.85);}
+.hc.ht{box-shadow:0 0 0 1.5px var(--pu);}
+
+/* ══════════════════════════════════════════════
+   MOOD + QUOTE
+══════════════════════════════════════════════ */
+.mood-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;}
+.mood-opt{padding:5px 11px;border:1px solid var(--b1);background:transparent;border-radius:99px;cursor:pointer;font-family:var(--font);font-size:12px;color:var(--t2);transition:var(--transition);}
+.mood-opt:hover,.mood-opt.sel{border-color:var(--pu);background:rgba(139,124,248,.12);color:var(--pu);}
+.mood-reply{font-family:var(--mono);font-size:11px;color:var(--gr);min-height:14px;margin-top:5px;}
+.quote-card{background:linear-gradient(135deg,rgba(139,124,248,.06),rgba(61,224,160,.03));border:1px solid var(--b1);border-radius:var(--r16);padding:16px 18px;margin-bottom:14px;cursor:pointer;transition:var(--transition);position:relative;overflow:hidden;}
+.quote-card::before{content:'\201C';position:absolute;top:-8px;left:10px;font-size:60px;color:rgba(139,124,248,.06);font-family:var(--serif);pointer-events:none;}
+.quote-card:hover{border-color:var(--b2);}
+.qt{font-family:var(--serif);font-size:16px;font-style:italic;line-height:1.6;position:relative;}
+.qa{font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:5px;}
+
+/* ══════════════════════════════════════════════
+   EXAM COUNTDOWNS
+══════════════════════════════════════════════ */
+.exam-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.exam-card{flex:1;min-width:130px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r12);padding:12px 14px;}
+.exam-subj{font-size:11px;font-weight:600;margin-bottom:4px;}
+.exam-days{font-size:24px;font-weight:700;line-height:1;}
+.exam-lbl{font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:2px;}
+.exam-edit{font-family:var(--mono);font-size:9px;color:var(--t3);cursor:pointer;margin-top:4px;display:inline-block;}
+.exam-edit:hover{color:var(--pu);}
+
+/* ══════════════════════════════════════════════
+   STREAK FREEZE
+══════════════════════════════════════════════ */
+.freeze-card{background:rgba(75,166,245,.06);border:1px solid rgba(75,166,245,.18);border-radius:var(--r12);padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.freeze-info{font-size:13px;font-weight:500;}
+.freeze-sub{font-size:11px;color:var(--t3);font-family:var(--mono);margin-top:2px;}
+
+/* ══════════════════════════════════════════════
+   MICRO WINS
+══════════════════════════════════════════════ */
+.wins-ticker{overflow:hidden;height:30px;position:relative;margin-bottom:12px;}
+.wins-list{display:flex;flex-direction:column;gap:0;}
+.win-item{height:30px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--t2);font-family:var(--mono);animation:tickup 0.4s ease;}
+@keyframes tickup{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+
+/* ══════════════════════════════════════════════
+   DATA EXPORT
+══════════════════════════════════════════════ */
+.export-btns{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* ══════════════════════════════════════════════
+   TOAST + CONFETTI
+══════════════════════════════════════════════ */
+.toast{position:fixed;bottom:80px;right:18px;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r12);padding:10px 15px;font-size:13px;font-weight:500;z-index:9999;transform:translateY(10px);opacity:0;transition:all .25s;pointer-events:none;max-width:250px;box-shadow:var(--shadow);}
+.toast.show{transform:none;opacity:1;}
+@media(min-width:769px){.toast{bottom:20px;}}
+canvas#cc{position:fixed;inset:0;pointer-events:none;z-index:9998;}
+
+/* ══════════════════════════════════════════════
+   MISC UTILITIES
+══════════════════════════════════════════════ */
+.divider{height:1px;background:var(--b1);margin:14px 0;}
+.gap14{margin-bottom:14px;}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.spacer{flex:1;}
+input[type=date].met-in{color-scheme:dark;}
+</style>
+</head>
+<body>
+
+<canvas id="cc"></canvas>
+<div class="toast" id="toast"></div>
+
+<!-- ONBOARDING -->
+<div class="onboard-overlay" id="onboard" style="display:none">
+  <div class="onboard-card">
+    <div class="onboard-step on" id="ob0">
+      <div class="ob-title">Welcome to<br><em style="color:var(--pu)">Grind OS</em></div>
+      <div class="ob-sub">Your personal command centre for DSA, exams, fitness, and the BMW internship. Let's set you up in 30 seconds.</div>
+      <button class="btn btn-primary btn-full" onclick="obNext(1)">Let's go →</button>
+    </div>
+    <div class="onboard-step" id="ob1">
+      <div class="ob-title">Your name?</div>
+      <div class="ob-sub">I'll use it to personalise your daily greeting and AI coach messages.</div>
+      <input class="ob-input" id="ob-name" placeholder="e.g. Arjun" autocomplete="off">
+      <button class="btn btn-primary btn-full" onclick="obNext(2)">Next →</button>
+    </div>
+    <div class="onboard-step" id="ob2">
+      <div class="ob-title">Current weight?</div>
+      <div class="ob-sub">This sets your starting point. Target is to lose 15–20 kg by 12 May for the wedding.</div>
+      <input class="ob-input" id="ob-weight" type="number" placeholder="e.g. 88 (kg)" autocomplete="off">
+      <button class="btn btn-primary btn-full" onclick="obNext(3)">Next →</button>
+    </div>
+    <div class="onboard-step" id="ob3">
+      <div class="ob-title">You're all set.</div>
+      <div class="ob-sub">Your 90-day journey starts today. The AI timetable, fitness plan, and study tracker are ready. Open this every morning.</div>
+      <button class="btn btn-primary btn-full" onclick="obFinish()">Start Day 1 🚀</button>
+    </div>
+    <div class="ob-dots" id="ob-dots">
+      <div class="ob-dot on"></div><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot"></div>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+
+<!-- ── SIDEBAR ──────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-wordmark">Grind <em>OS</em></div>
+    <div class="logo-tag">// DSA · EXAMS · FITNESS · BMW</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Main</div>
+    <button class="nav-btn on" onclick="go('home',this)"><span class="ni">🏠</span>Today</button>
+    <button class="nav-btn" onclick="go('timetable',this)"><span class="ni">📅</span>Timetable</button>
+    <button class="nav-btn" onclick="go('problems',this)"><span class="ni">🧠</span>Problems<span class="nav-badge" id="sb-probs">0</span></button>
+    <button class="nav-btn" onclick="go('fitness',this)"><span class="ni">💪</span>Fitness</button>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Study</div>
+    <button class="nav-btn" onclick="go('syllabus',this)"><span class="ni">📚</span>Syllabus</button>
+    <button class="nav-btn" onclick="go('exams',this)"><span class="ni">📆</span>Exam Dates</button>
+    <button class="nav-btn" onclick="go('focus',this)"><span class="ni">🍅</span>Focus Timer</button>
+    <button class="nav-btn" onclick="go('journal',this)"><span class="ni">📓</span>Journal</button>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Track</div>
+    <button class="nav-btn" onclick="go('progress',this)"><span class="ni">📊</span>Progress</button>
+    <button class="nav-btn" onclick="go('badges',this)"><span class="ni">🏅</span>Badges</button>
+    <button class="nav-btn" onclick="go('settings',this)"><span class="ni">⚙️</span>Settings</button>
+  </div>
+  <div class="sb-foot">
+    <div class="sb-stat-row">
+      <div class="sb-stat"><div class="sb-stat-v" id="sb-st">0</div><div class="sb-stat-l">🔥 Streak</div></div>
+      <div class="sb-stat"><div class="sb-stat-v" id="sb-day">1</div><div class="sb-stat-l">📅 Day</div></div>
+      <div class="sb-stat"><div class="sb-stat-v" id="sb-wed">--</div><div class="sb-stat-l">💍 Wed.</div></div>
+    </div>
+    <div class="sb-actions">
+      <button class="icon-btn" onclick="toggleTheme()" title="Toggle light/dark">🌓</button>
+      <button class="icon-btn" onclick="useFreeze()" title="Use streak freeze">🧊</button>
+      <button class="icon-btn" onclick="go('settings',null)" title="Settings">⚙️</button>
+      <button class="icon-btn" onclick="exportData()" title="Export data">💾</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MOBILE NAV ──────────────────────────────── -->
+<nav class="mob-nav">
+  <button class="mn-btn on" onclick="go('home',this)"><span class="mn-icon">🏠</span>Home</button>
+  <button class="mn-btn" onclick="go('timetable',this)"><span class="mn-icon">📅</span>Plan</button>
+  <button class="mn-btn" onclick="go('problems',this)"><span class="mn-icon">🧠</span>DSA</button>
+  <button class="mn-btn" onclick="go('fitness',this)"><span class="mn-icon">💪</span>Fit</button>
+  <button class="mn-btn" onclick="go('syllabus',this)"><span class="mn-icon">📚</span>Study</button>
+  <button class="mn-btn" onclick="go('progress',this)"><span class="mn-icon">📊</span>Stats</button>
+  <button class="mn-btn" onclick="go('settings',this)"><span class="mn-icon">⚙️</span>More</button>
+</nav>
+
+<!-- ── MAIN ─────────────────────────────────────── -->
+<main class="main">
+
+<!-- ════ HOME ════════════════════════════════════ -->
+<div class="page on" id="page-home">
+  <div class="page-title" id="h-greet">Good morning.</div>
+  <div class="page-sub" id="h-date"></div>
+
+  <!-- panic mode banner (shown when exam < 7 days) -->
+  <div id="panic-zone"></div>
+
+  <!-- micro win ticker -->
+  <div class="wins-ticker" id="wins-ticker" style="display:none">
+    <div class="wins-list" id="wins-list"></div>
+  </div>
+
+  <!-- mood -->
+  <div class="card gap14">
+    <div class="sec-label">How are you today?</div>
+    <div class="mood-row">
+      <button class="mood-opt" onclick="setMood('fire','🔥')">🔥 Fired up</button>
+      <button class="mood-opt" onclick="setMood('good','😊')">😊 Good</button>
+      <button class="mood-opt" onclick="setMood('okay','😐')">😐 Okay</button>
+      <button class="mood-opt" onclick="setMood('low','😔')">😔 Low</button>
+      <button class="mood-opt" onclick="setMood('tired','😴')">😴 Tired</button>
+    </div>
+    <div class="mood-reply" id="mood-reply"></div>
+  </div>
+
+  <!-- quote -->
+  <div class="quote-card" onclick="nextQuote()">
+    <div class="qt" id="qt"></div>
+    <div class="qa" id="qa"></div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:4px">↻ tap to change</div>
+  </div>
+
+  <!-- stats -->
+  <div class="g4 gap14">
+    <div class="stat" style="--c:var(--or)"><div class="stat-l">Streak</div><div class="stat-v" id="st-s">0<span style="font-size:16px">🔥</span></div><div class="stat-s">days</div></div>
+    <div class="stat" style="--c:var(--gr)"><div class="stat-l">Problems</div><div class="stat-v" id="st-p">0</div><div class="stat-s" id="st-ps">E:0 M:0 H:0</div></div>
+    <div class="stat" style="--c:var(--go)"><div class="stat-l">XP</div><div class="stat-v" id="st-x">0</div><div class="stat-s" id="st-xl">Noob</div></div>
+    <div class="stat" style="--c:var(--pu)"><div class="stat-l">Day</div><div class="stat-v" id="st-d">1</div><div class="stat-s">of 90</div></div>
+  </div>
+
+  <!-- phase -->
+  <div class="card gap14">
+    <div class="card-head">
+      <div><div class="sec-label" style="margin-bottom:3px">Phase Progress</div><div class="card-title" id="ph-n">Month 1 — Foundations</div></div>
+      <span class="pill p-pu" id="ph-t">Week 1</span>
+    </div>
+    <div class="prog glow"><div class="prog-f" id="ph-f" style="width:0%"></div></div>
+    <div style="display:flex;justify-content:space-between;margin-top:5px;font-family:var(--mono);font-size:10px;color:var(--t3)"><span id="ph-s">Day 1</span><span id="ph-p">0%</span><span id="ph-e">Day 30</span></div>
+  </div>
+
+  <!-- XP level -->
+  <div class="card gap14">
+    <div class="card-head">
+      <span style="font-size:13px;font-weight:600">⚡ Level: <span class="pill p-go" id="lvl-badge" style="margin-left:4px">Noob</span></span>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--go)" id="xp-l">0 / 200 XP</span>
+    </div>
+    <div class="prog thick glow"><div class="prog-f" id="xp-f" style="width:0%;--c:var(--go)"></div></div>
+    <div style="display:flex;justify-content:space-between;margin-top:5px;font-family:var(--mono);font-size:9px;color:var(--t3)"><span>Noob</span><span>Learner</span><span>Coder</span><span>Pro</span><span>Elite</span></div>
+  </div>
+
+  <!-- streak freeze status -->
+  <div class="freeze-card">
+    <div><div class="freeze-info">🧊 Streak Freezes: <strong id="freeze-count">1</strong> remaining</div><div class="freeze-sub">Use one if you miss a day — preserves your streak (1 per week)</div></div>
+    <button class="btn" onclick="useFreeze()">Use Freeze</button>
+  </div>
+
+  <!-- tasks -->
+  <div class="g2 gap14">
+    <div class="card"><div class="sec-label">DSA Tasks</div><div class="task-list" id="dsa-t"></div></div>
+    <div class="card"><div class="sec-label">Aptitude + Habit</div><div class="task-list" id="apt-t"></div></div>
+  </div>
+
+  <!-- quick actions -->
+  <div class="card">
+    <div class="sec-label">Quick Actions</div>
+    <div class="btn-row">
+      <button class="btn" onclick="go('problems',null)">+ Log Problem</button>
+      <button class="btn" onclick="markDayDone()">✓ Day Done</button>
+      <button class="btn" onclick="nextQuote()">↻ Quote</button>
+      <button class="btn btn-wa" onclick="sendWA()"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>Share Plan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TIMETABLE ═══════════════════════════════ -->
+<div class="page" id="page-timetable">
+  <div class="page-title">Today's Plan</div>
+  <div class="page-sub" id="tt-sub">AI-generated · analyses yesterday · adapts to your energy</div>
+  <div class="card" style="background:linear-gradient(135deg,rgba(139,124,248,.07),rgba(61,224,160,.04))">
+    <div class="ai-lbl"><span class="ai-dot"></span>AI Daily Coach — Memory Active</div>
+    <div class="ai-out" id="ai-daily">Click Generate to get your personalised daily briefing based on your progress.</div>
+    <div class="btn-row">
+      <button class="btn btn-ai" onclick="genAIPlan()">✦ Generate AI Plan</button>
+      <button class="btn btn-wa" onclick="sendWA()">📲 Send to WhatsApp</button>
+    </div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:6px">WhatsApp opens with today's full schedule. You just tap Send.</div>
+  </div>
+  <div class="btn-row gap14">
+    <button class="btn btn-gr" onclick="genTimetable(true)">🔀 Regenerate Schedule</button>
+  </div>
+  <div id="tt-slots"></div>
+</div>
+
+<!-- ════ PROBLEMS ════════════════════════════════ -->
+<div class="page" id="page-problems">
+  <div class="page-title">Problem Tracker</div>
+  <div class="page-sub">Log every LeetCode problem by difficulty</div>
+  <div class="diff-row">
+    <div class="diff-card" style="border-top:2px solid var(--gr)"><div class="diff-n" style="color:var(--gr)" id="d-easy">0</div><div class="diff-l">EASY</div></div>
+    <div class="diff-card" style="border-top:2px solid var(--go)"><div class="diff-n" style="color:var(--go)" id="d-med">0</div><div class="diff-l">MEDIUM</div></div>
+    <div class="diff-card" style="border-top:2px solid var(--re)"><div class="diff-n" style="color:var(--re)" id="d-hard">0</div><div class="diff-l">HARD</div></div>
+    <div class="diff-card" style="border-top:2px solid var(--pu)"><div class="diff-n" style="color:var(--pu)" id="d-total">0</div><div class="diff-l">TOTAL</div></div>
+  </div>
+  <div class="card gap14">
+    <div class="sec-label">Log a Problem</div>
+    <div class="diff-btns">
+      <button class="diff-btn easy-b" onclick="selDiff('easy',this)">Easy +15 XP</button>
+      <button class="diff-btn med-b" onclick="selDiff('med',this)">Medium +25 XP</button>
+      <button class="diff-btn hard-b" onclick="selDiff('hard',this)">Hard +40 XP</button>
+    </div>
+    <div class="row">
+      <input class="met-in" id="prob-name" placeholder="Problem name (optional)" style="flex:1">
+      <button class="btn btn-primary" onclick="logProb()">Log It</button>
+    </div>
+  </div>
+  <div class="card gap14">
+    <div class="sec-label">Recent Problems</div>
+    <div id="prob-log" style="max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+  <div class="card" style="background:linear-gradient(135deg,rgba(139,124,248,.07),rgba(61,224,160,.04))">
+    <div class="ai-lbl"><span class="ai-dot"></span>AI Problem Guidance</div>
+    <div class="ai-out" id="ai-prob">Click below to get personalised advice on what to solve next based on your current level.</div>
+    <div class="btn-row"><button class="btn btn-ai" onclick="getAIProb()">✦ What Should I Solve Next?</button></div>
+  </div>
+</div>
+
+<!-- ════ FITNESS ═════════════════════════════════ -->
+<div class="page" id="page-fitness">
+  <div class="page-title">Fitness</div>
+  <div class="page-sub">No gym · Fat loss + Muscle · Wedding: 12 May</div>
+
+  <div class="wed-card">
+    <div class="wed-title">🎊 Chacha's Wedding Countdown</div>
+    <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+      <div><div class="wed-days" id="wed-d">--</div><div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:2px">days to go</div></div>
+      <div class="wed-units">
+        <div class="wed-unit"><div class="wed-unit-n" id="wed-h">--</div><div class="wed-unit-l">HRS</div></div>
+        <div class="wed-unit"><div class="wed-unit-n" id="wed-m">--</div><div class="wed-unit-l">MIN</div></div>
+      </div>
+    </div>
+    <div class="proj-bar">
+      <div class="proj-lbl"><span id="proj-label">Weight projection loading...</span><span id="proj-target" style="color:var(--pk)">Target: 68kg</span></div>
+      <div class="prog" style="height:6px"><div class="prog-f" id="proj-bar" style="width:0%;--c:var(--pk)"></div></div>
+    </div>
+  </div>
+
+  <div class="card gap14">
+    <div class="sec-label">Today's Metrics</div>
+    <div class="body-metrics">
+      <div class="met-wrap"><div class="met-lbl">Weight (kg)</div><input class="met-in" type="number" id="m-w" placeholder="85"></div>
+      <div class="met-wrap"><div class="met-lbl">Waist (cm)</div><input class="met-in" type="number" id="m-wt" placeholder="92"></div>
+      <div class="met-wrap"><div class="met-lbl">Sleep (hrs)</div><input class="met-in" type="number" id="m-sl" placeholder="7"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-gr" onclick="logMet()">Save Metrics</button>
+      <button class="btn btn-ai" onclick="getAIFit()">✦ AI Coach</button>
+    </div>
+    <div class="ai-wrap"><div class="ai-lbl"><span class="ai-dot"></span>AI Fitness Coach</div><div class="ai-out" id="ai-fit">Log metrics and click AI Coach for personalised advice.</div></div>
+  </div>
+
+  <div class="card gap14">
+    <div class="sec-label">Weight Chart</div>
+    <div style="display:flex;align-items:flex-end;gap:3px;height:65px;margin:8px 0 4px" id="w-chart"></div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--t3)" id="w-sum">Log your weight daily to see your progress here.</div>
+  </div>
+
+  <div class="card gap14">
+    <div class="card-head">
+      <div><div class="sec-label" style="margin-bottom:2px">Today's Workout</div><div class="card-title" id="wo-name">Loading...</div></div>
+      <span class="pill" id="wo-pill">Type</span>
+    </div>
+    <div id="wo-exs"></div>
+    <div class="btn-row">
+      <button class="btn btn-gr" onclick="markWO()">✓ Workout Complete (+50 XP)</button>
+    </div>
+  </div>
+
+  <div class="card gap14">
+    <div class="sec-label">Diet Guide — Indian Foods, No Gym</div>
+    <div class="g2">
+      <div style="background:rgba(61,224,160,.06);border:1px solid rgba(61,224,160,.14);border-radius:var(--r12);padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--gr);margin-bottom:6px">✅ Eat More</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.7">Daal, chole, rajma · Boiled eggs · Paneer (small) · Oats, poha, whole wheat roti · All vegetables · Curd, buttermilk · Fruits (morning) · 3–4L water daily</div>
+      </div>
+      <div style="background:rgba(240,80,96,.06);border:1px solid rgba(240,80,96,.14);border-radius:var(--r12);padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--re);margin-bottom:6px">❌ Cut These</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.7">Cold drinks · Fried snacks · Excess white rice · Maida products · Sweets · Eating after 9 PM · Skipping breakfast · Packaged juice</div>
+      </div>
+    </div>
+    <div style="background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.14);border-radius:var(--r12);padding:12px 14px;margin-top:8px">
+      <div style="font-size:13px;font-weight:600;color:var(--go);margin-bottom:6px">🍽️ Meal Timing</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.85">
+        <strong>6 AM</strong> — Warm water + lemon + 5 soaked almonds<br>
+        <strong>8 AM</strong> — Oats/poha/2 eggs + 1 whole wheat roti<br>
+        <strong>11 AM</strong> — 1 fruit + curd<br>
+        <strong>1 PM</strong> — 2 chapati + sabzi + daal + big salad<br>
+        <strong>4 PM</strong> — Buttermilk or green tea + roasted chana<br>
+        <strong>7 PM</strong> — Light: 1–2 chapati + sabzi / khichdi<br>
+        <strong>9 PM</strong> — Glass of milk (if hungry)
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ SYLLABUS ═════════════════════════════════ -->
+<div class="page" id="page-syllabus">
+  <div class="page-title">Syllabus</div>
+  <div class="page-sub">Chemistry · Physics · BEE — Units 3–6 only · Backbencher-proof summaries</div>
+  <div id="syl-c"></div>
+</div>
+
+<!-- ════ EXAM DATES ══════════════════════════════ -->
+<div class="page" id="page-exams">
+  <div class="page-title">Exam Dates</div>
+  <div class="page-sub">Set your exam dates — the app will switch to panic mode when they're near</div>
+  <div class="exam-row" id="exam-cards"></div>
+  <div class="card gap14">
+    <div class="sec-label">Set / Update Exam Dates</div>
+    <div style="display:flex;flex-direction:column;gap:10px" id="exam-inputs"></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="saveExamDates()">Save Dates</button></div>
+  </div>
+  <div class="card" style="background:linear-gradient(135deg,rgba(139,124,248,.07),rgba(61,224,160,.04))">
+    <div class="ai-lbl"><span class="ai-dot"></span>AI Exam Strategy</div>
+    <div class="ai-out" id="ai-exam">Set your exam dates and click below for a personalised preparation strategy.</div>
+    <div class="btn-row"><button class="btn btn-ai" onclick="getAIExam()">✦ Get Exam Strategy</button></div>
+  </div>
+</div>
+
+<!-- ════ FOCUS ════════════════════════════════════ -->
+<div class="page" id="page-focus">
+  <div class="page-title">Focus Timer</div>
+  <div class="page-sub">Pomodoro · Phone away · Full focus</div>
+  <div class="card gap14" style="text-align:center">
+    <div class="pomo-mode" id="pomo-mode">FOCUS SESSION</div>
+    <div class="pomo-ring">
+      <svg class="psvg" width="150" height="150" viewBox="0 0 150 150">
+        <circle class="parc-bg" cx="75" cy="75" r="58"/>
+        <circle class="parc" id="parc" cx="75" cy="75" r="58" stroke-dasharray="364.4" stroke-dashoffset="0"/>
+      </svg>
+      <div class="pomo-n" id="pomo-n">25:00</div>
+    </div>
+    <div style="font-size:12px;color:var(--t3);font-family:var(--mono);margin-bottom:12px" id="pomo-sub">Choose a session length, then start</div>
+    <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:10px">
+      <button class="btn" onclick="setPomo(25,'FOCUS')">25 min</button>
+      <button class="btn" onclick="setPomo(45,'DEEP WORK')">45 min</button>
+      <button class="btn" onclick="setPomo(5,'BREAK')">5 min</button>
+      <button class="btn" onclick="setPomo(15,'LONG BREAK')">15 min</button>
+    </div>
+    <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:14px">
+      <button class="btn btn-primary" id="pomo-start" onclick="togglePomo()">▶ Start</button>
+      <button class="btn" onclick="resetPomo()">↺ Reset</button>
+    </div>
+    <div id="pomo-dots" style="margin-bottom:6px"></div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--t3)">Sessions today: <span style="color:var(--pu)" id="pomo-cnt">0</span> · Total: <span style="color:var(--t2)" id="pomo-total">0</span></div>
+  </div>
+
+  <div class="card gap14">
+    <div class="sec-label">Study Ambiance</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="music-btn" href="https://www.youtube.com/watch?v=jfKfPfyJRdk" target="_blank">🎵 Lo-fi Hip Hop</a>
+      <a class="music-btn" href="https://www.youtube.com/watch?v=n61ULEU7CO0" target="_blank">🌧️ Rain Sounds</a>
+      <a class="music-btn" href="https://www.youtube.com/watch?v=sjkrrmBnpGE" target="_blank">🧠 Deep Focus</a>
+      <a class="music-btn" href="https://www.youtube.com/watch?v=lTRiuFIWV54" target="_blank">📚 Study Playlist</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-label">Focus on</div>
+    <div class="task-list" id="focus-list"></div>
+  </div>
+</div>
+
+<!-- ════ JOURNAL ═════════════════════════════════ -->
+<div class="page" id="page-journal">
+  <div class="page-title">Journal</div>
+  <div class="page-sub" id="j-lbl">Write what you learned, what clicked, what didn't</div>
+  <div class="card gap14">
+    <textarea class="j-area" id="j-in" placeholder="Today I studied... I struggled with... I finally understood... Tomorrow I want to focus on..."></textarea>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveJ()">Save Entry</button>
+      <button class="btn btn-ai" onclick="getAIJ()">✦ AI Reflection</button>
+    </div>
+    <div class="ai-wrap"><div class="ai-lbl"><span class="ai-dot"></span>AI insight on today's entry</div><div class="ai-out" id="ai-j">Write your entry and click AI Reflection for personalised insight.</div></div>
+  </div>
+  <div class="sec-label">Past Entries</div>
+  <div id="j-list"></div>
+</div>
+
+<!-- ════ PROGRESS ════════════════════════════════ -->
+<div class="page" id="page-progress">
+  <div class="page-title">Progress</div>
+  <div class="page-sub">Your 90-day journey at a glance</div>
+  <div class="g3 gap14">
+    <div class="stat" style="--c:var(--pu)"><div class="stat-l">Active Days</div><div class="stat-v" id="pr-a">0</div><div class="stat-s">of <span id="pr-p">1</span></div></div>
+    <div class="stat" style="--c:var(--gr)"><div class="stat-l">Best Streak</div><div class="stat-v" id="pr-b">0</div><div class="stat-s">days</div></div>
+    <div class="stat" style="--c:var(--go)"><div class="stat-l">Pomodoros</div><div class="stat-v" id="pr-po">0</div><div class="stat-s">sessions</div></div>
+  </div>
+  <div class="card gap14">
+    <div class="sec-label">90-Day Heatmap</div>
+    <div class="hmap" id="hmap" style="margin-top:8px"></div>
+    <div style="display:flex;gap:5px;align-items:center;margin-top:7px;font-family:var(--mono);font-size:9px;color:var(--t3)">
+      Less <div class="hc" style="width:9px;height:9px;display:inline-block;margin:0 1px"></div><div class="hc h1" style="width:9px;height:9px;display:inline-block;margin:0 1px"></div><div class="hc h2" style="width:9px;height:9px;display:inline-block;margin:0 1px"></div><div class="hc h3" style="width:9px;height:9px;display:inline-block;margin:0 1px"></div> More
+    </div>
+  </div>
+  <div class="card gap14">
+    <div class="sec-label">Problems Per Week</div>
+    <div style="display:flex;align-items:flex-end;gap:4px;height:60px;margin:8px 0 3px" id="pc"></div>
+    <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--t3)" id="pc-l"></div>
+  </div>
+  <div class="card gap14">
+    <div class="sec-label">Mood History (Last 7 Days)</div>
+    <div style="display:flex;gap:12px;font-size:1.1rem;margin-top:8px;flex-wrap:wrap" id="mood-hist"></div>
+  </div>
+  <div class="card gap14" style="background:linear-gradient(135deg,rgba(139,124,248,.07),rgba(61,224,160,.04))">
+    <div class="ai-lbl"><span class="ai-dot"></span>AI Weekly Performance Review</div>
+    <div class="ai-out" id="ai-prog">Click to get your AI-powered weekly performance analysis.</div>
+    <div class="btn-row"><button class="btn btn-ai" onclick="getAIProg()">✦ Weekly Review</button></div>
+  </div>
+</div>
+
+<!-- ════ BADGES ═══════════════════════════════════ -->
+<div class="page" id="page-badges">
+  <div class="page-title">Badges</div>
+  <div class="page-sub">Earned by showing up. Gray = locked.</div>
+  <div class="badge-grid" id="badge-grid"></div>
+</div>
+
+<!-- ════ SETTINGS ════════════════════════════════ -->
+<div class="page" id="page-settings">
+  <div class="page-title">Settings</div>
+  <div class="page-sub">Customise your Grind OS</div>
+
+  <div class="card gap14">
+    <div class="sec-label">Your Profile</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="met-wrap"><div class="met-lbl">Your Name</div><input class="met-in" id="set-name" placeholder="Your name"></div>
+      <div class="met-wrap"><div class="met-lbl">Starting Weight (kg)</div><input class="met-in" type="number" id="set-sw" placeholder="88"></div>
+      <div class="met-wrap"><div class="met-lbl">Target Weight (kg)</div><input class="met-in" type="number" id="set-tw" placeholder="68"></div>
+      <div class="met-wrap"><div class="met-lbl">Journey Start Date</div><input class="met-in" type="date" id="set-sd"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="saveSettings()">Save Profile</button></div>
+  </div>
+
+  <div class="card gap14">
+    <div class="sec-label">Appearance</div>
+    <div class="btn-row">
+      <button class="btn" onclick="toggleTheme()">🌓 Toggle Light / Dark Mode</button>
+    </div>
+  </div>
+
+  <div class="card gap14">
+    <div class="sec-label">Data Management</div>
+    <div class="export-btns">
+      <button class="btn btn-gr" onclick="exportData()">💾 Export Backup (JSON)</button>
+      <button class="btn btn-or" onclick="importData()">📂 Import Backup</button>
+      <button class="btn" style="color:var(--re);border-color:rgba(240,80,96,.3)" onclick="resetAll()">↺ Reset All Data</button>
+    </div>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="doImport(event)">
+  </div>
+
+  <div class="card gap14">
+    <div class="sec-label">Install as App</div>
+    <div style="font-size:13px;color:var(--t2);line-height:1.65;margin-bottom:10px">
+      On <strong>Android</strong>: Open in Chrome → Menu → "Add to Home Screen"<br>
+      On <strong>iPhone</strong>: Open in Safari → Share → "Add to Home Screen"<br>
+      On <strong>Desktop</strong>: Click the install icon in the browser address bar
+    </div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--t3)">Works offline once installed. All data stays on your device.</div>
+  </div>
+
+  <div class="card gap14">
+    <div class="sec-label">About</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--t3);line-height:1.7">
+      Grind OS v4.0 · Built for your 90-day sprint<br>
+      DSA + Chemistry + Physics + BEE + Fitness<br>
+      Target: BMW International Internship + Chacha's wedding 💪
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   CORE DATA
+══════════════════════════════════════════════ */
+const QUOTES=[
+  {t:"BMW doesn't care about your year drop. They care about what you built during it.",a:"— Your future self"},
+  {t:"The pain of discipline is far less than the pain of regret.",a:"— Unknown"},
+  {t:"You don't rise to your goals. You fall to your systems.",a:"— James Clear"},
+  {t:"Chemistry clears → third year → BMW. One step at a time.",a:"— Your roadmap"},
+  {t:"The backbencher who shows up prepared wins every time.",a:"— Every professor ever"},
+  {t:"One LeetCode a day keeps the rejection away.",a:"— Dev wisdom"},
+  {t:"20 kg by May. One day at a time.",a:"— This tracker"},
+  {t:"The year drop is a chapter, not the whole story.",a:"— Unknown"},
+  {t:"Understand it. Memorise the formula. Practice the numerical. That's the whole formula.",a:"— Engineering exam strategy"},
+  {t:"Showing up for 60 minutes daily beats a 6-hour session once a week.",a:"— Atomic Habits"},
+  {t:"You're not behind. You're building momentum.",a:"— Grind OS"},
+  {t:"Hard problems today, easy interviews tomorrow.",a:"— Unknown"},
+  {t:"Sleep is when muscle grows and memory consolidates. Never skip it.",a:"— Biology"},
+  {t:"The best investment you can make before May 12 is in the mirror.",a:"— Fitness coach"},
+  {t:"Every push-up is a vote for the person you want to become.",a:"— James Clear"},
+];
+const MOOD_MSGS={fire:["🔥 Let's GO. Do the hardest task first while you have this energy.","Maximum power mode. Don't waste it — solve a hard LeetCode right now."],good:["😊 Perfect headspace. Concepts stick when you feel good. Make it count.","Good vibes → good session. Start with the subject you've been avoiding."],okay:["😐 That's fine. Even 1 problem + 1 unit = a real win today.","Okay days are still study days. Just open LeetCode. The rest follows."],low:["😔 Hey. Just open one page. That's genuinely enough for today.","Low days build grit. Revise something you already know — easy wins still count."],tired:["😴 Do aptitude only — it's the lightest. Rest is part of the preparation.","Even 15 minutes of revision counts. Your brain works while you sleep."]};
+const PHASES=[{n:"Month 1 — Foundations",t:"C++ STL + Core DSA",s:1,e:30},{n:"Month 2 — Core DSA",t:"Trees · Graphs · DP",s:31,e:60},{n:"Month 3 — Mock Interviews",t:"Revision + Apply",s:61,e:90}];
+const WEEK_TOPICS=["C++ STL","Arrays & Strings","Recursion & Linked List","Binary Search & Hashing","Trees & BST","Graphs BFS/DFS","Greedy & Heaps","DP 1D","DP 2D & LCS","Backtracking & Tries","Full Revision","Mock Interviews"];
+const DSA_TASKS=[["Revise yesterday's code (20 min)","Solve 2 LeetCode problems","Study today's topic concept","Write key ideas on paper"],["Solve 1 medium LeetCode","Revisit 1 hard problem with hints","Study week's pattern deeply","1 easy for confidence"],["3 timed problems (45 min)","1 mock interview round","Revise 5 weakest topics","Apply to 2 internships"]];
+const APT_BANK=[["20 min IndiaBix quant","Revise yesterday's formulas","1 logical reasoning set","5-min speed test"],["10 percentage problems","Seating arrangement set","Blood relations quiz","1 English article (verbal)"],["Full 30-min mock test","Time & Work problems","Data interpretation set","Error spotting (verbal)"]];
+const LEVELS=[{n:"Noob",min:0,max:200},{n:"Learner",min:200,max:500},{n:"Coder",min:500,max:1000},{n:"Pro",min:1000,max:2000},{n:"Elite",min:2000,max:4000}];
+const BADGES=[
+  {id:"d1",i:"🌱",n:"Day One",d:"Started",c:s=>s.streak>=1||Object.keys(s.ad||{}).length>=1},
+  {id:"s3",i:"🔥",n:"On Fire",d:"3-day streak",c:s=>s.streak>=3},
+  {id:"s7",i:"⚡",n:"Grinder",d:"7-day streak",c:s=>s.streak>=7},
+  {id:"s14",i:"💎",n:"Two Weeks",d:"14-day streak",c:s=>s.streak>=14},
+  {id:"s30",i:"👑",n:"Unstoppable",d:"30-day streak",c:s=>s.streak>=30},
+  {id:"p10",i:"🧠",n:"Solver",d:"10 problems",c:s=>s.prob>=10},
+  {id:"p25",i:"🎯",n:"Sharp",d:"25 problems",c:s=>s.prob>=25},
+  {id:"p50",i:"🚀",n:"LeetCode 50",d:"50 problems",c:s=>s.prob>=50},
+  {id:"p100",i:"💯",n:"Century",d:"100 problems",c:s=>s.prob>=100},
+  {id:"h10",i:"🔒",n:"Hard Cracker",d:"10 hard problems",c:s=>s.diffH>=10},
+  {id:"pm5",i:"🍅",n:"Focused",d:"5 Pomodoros",c:s=>s.tpomo>=5},
+  {id:"pm20",i:"🧘",n:"Deep Work",d:"20 Pomodoros",c:s=>s.tpomo>=20},
+  {id:"j5",i:"📓",n:"Reflective",d:"5 journal entries",c:s=>s.journal&&s.journal.length>=5},
+  {id:"fit7",i:"💪",n:"Fit Week",d:"7 workouts",c:s=>s.woDays>=7},
+  {id:"fit21",i:"🏃",n:"3-Week Grind",d:"21 workouts",c:s=>s.woDays>=21},
+  {id:"w5",i:"⚖️",n:"5kg Down",d:"Lost 5kg",c:s=>weightLost(s)>=5},
+  {id:"w10",i:"🔥",n:"10kg Down",d:"Lost 10kg",c:s=>weightLost(s)>=10},
+  {id:"lc",i:"💻",n:"Coder",d:"Coder level",c:s=>s.xp>=500},
+  {id:"lp",i:"🏆",n:"Pro",d:"Pro level",c:s=>s.xp>=1000},
+  {id:"ph2",i:"📈",n:"Phase 2",d:"Entered Month 2",c:s=>daysSince(s)>=31},
+  {id:"ph3",i:"🎓",n:"Final Phase",d:"Entered Month 3",c:s=>daysSince(s)>=61},
+];
+const EXAMS=[{id:"chem",name:"Engineering Chemistry",color:"var(--or)"},{id:"phy",name:"Engineering Physics",color:"var(--bl)"},{id:"bee",name:"Basic Electrical Engg",color:"var(--go)"}];
+const WORKOUTS=[
+  {n:"Upper Body + Cardio",type:"Upper",pill:"p-bl",exs:[{n:"Jumping Jacks",s:"3 × 40 reps",t:"Warm-up. Get heart rate up before anything else."},{n:"Wide Push-ups",s:"4 × 12 reps",t:"Chest + shoulders. Elevate feet to make it harder."},{n:"Diamond Push-ups",s:"3 × 10 reps",t:"Fingers form diamond. Targets triceps hard."},{n:"Pike Push-ups",s:"3 × 10 reps",t:"V-shape body. Best home shoulder exercise."},{n:"Plank",s:"3 × 45 seconds",t:"Core. Hips level. Don't let them sag."},{n:"Brisk Walk / Jog",s:"30 min",t:"Non-negotiable for fat loss. Evening is fine."}]},
+  {n:"Lower Body + Core",type:"Lower",pill:"p-or",exs:[{n:"Bodyweight Squats",s:"4 × 20 reps",t:"Full range. King of lower body exercises."},{n:"Reverse Lunges",s:"3 × 12 each leg",t:"Gentler on knees than forward lunges."},{n:"Glute Bridges",s:"4 × 20 reps",t:"Lie on back, feet flat. Squeeze hard at top."},{n:"Bicycle Crunches",s:"3 × 20 reps",t:"Slow and controlled. Best ab exercise."},{n:"Mountain Climbers",s:"3 × 30 seconds",t:"Core + cardio combo. Drive knees fast."},{n:"Calf Raises",s:"3 × 25 reps",t:"Use stair edge for full range of motion."}]},
+  {n:"Full Body HIIT",type:"HIIT",pill:"p-re",exs:[{n:"Burpees",s:"4 × 10 reps",t:"Most effective fat-burner. No shortcuts."},{n:"Jump Squats",s:"4 × 15 reps",t:"Land softly. Feel the burn."},{n:"High Knees",s:"3 × 45 seconds",t:"Drive knees above hip level. Arms pump."},{n:"Push-up to Side Plank",s:"3 × 8 each side",t:"Rotate to side plank after each push-up."},{n:"Squat Hold",s:"3 × 45 seconds",t:"Sit in squat. Wall behind helps beginners."},{n:"Cool Down Stretch",s:"10 min",t:"Hips, hamstrings, shoulders. Non-optional."}]},
+  {n:"Active Recovery",type:"Recovery",pill:"p-gr",exs:[{n:"Full body stretching",s:"15 min",t:"Hold each stretch 30+ seconds."},{n:"30 min slow walk",s:"1 session",t:"Easy pace only. This is not a workout."},{n:"Surya Namaskar",s:"10 rounds",t:"Great for flexibility and mild cardio."},{n:"Breathing exercise",s:"5 min",t:"4-7-8: inhale 4s, hold 7s, exhale 8s."}]},
+  {n:"Core + Cardio Blast",type:"Core",pill:"p-go",exs:[{n:"Plank variants",s:"3 × 45s: front, left, right",t:"Side planks are harder — build to them."},{n:"Russian Twists",s:"3 × 20 reps",t:"Hold water bottle for resistance."},{n:"Leg Raises",s:"3 × 15 reps",t:"Lower slowly. Don't drop them."},{n:"V-ups",s:"3 × 12 reps",t:"Touch toes at top. Advanced move."},{n:"Jump Rope / Shadow Jump",s:"10 min intervals",t:"Best cardio. ~12 cal/min burned."},{n:"Chair Step-ups",s:"3 × 15 each leg",t:"Legs + light cardio together."}]},
+  {n:"Push + Pull (Upper)",type:"Push/Pull",pill:"p-pu",exs:[{n:"Wide + Diamond Push-ups",s:"4 × 10 each",t:"Two variations back to back."},{n:"Inverted Rows",s:"3 × 12 reps",t:"Under a table — back and biceps."},{n:"Shoulder Taps",s:"3 × 20 taps",t:"Plank position. Don't rotate hips."},{n:"Superman Holds",s:"3 × 12 reps",t:"Face down, lift arms + legs. 3s hold."},{n:"Tricep Dips",s:"3 × 15 reps",t:"Use a sturdy chair."},{n:"Brisk Walk",s:"20 min",t:"Staircase works too."}]},
+  {n:"Rest Day",type:"Rest",pill:"p-gr",exs:[{n:"Complete Rest",s:"Today",t:"Rest is when muscle actually grows."},{n:"Light walk (optional)",s:"20 min",t:"Easy pace only. Not a workout."},{n:"Meal prep",s:"30 min",t:"Set up tomorrow's meals tonight."},{n:"8 hours sleep",s:"Tonight",t:"Growth hormone released during deep sleep."}]},
+];
+
+/* SYLLABUS */
+const SYLLABUS=[
+  {id:"chem",n:"Engineering Chemistry",icon:"🧪",c:"var(--or)",pill:"p-or",units:[
+    {n:3,t:"Engineering Materials",top:"Speciality polymers: Polycarbonate, PHBV, Polyacetylene (PPV), FRP composites. Nanomaterials: 0D/1D/2D/3D classification, graphene, carbon nanotubes, quantum dots.",bb:"🧠 Polymers = plastic families with superpowers. Polycarbonate = bulletproof glass material. PHBV = eco-friendly. Polyacetylene = conducts electricity. Graphene = 1 atom thick, 200× stronger than steel. Quantum dots = nanoparticles that glow different colors based on size (size controls color). EXAM TIP: Make a table — Polymer | Preparation | Properties | Use. S/V ratio = 6/d for cube. Numericals on that."},
+    {n:4,t:"Fuels",top:"HCV/LCV, Bomb calorimeter, Boy's gas calorimeter. Coal: proximate & ultimate analysis. Petroleum refining fractions. CNG, Hydrogen fuel, Biodiesel, Power alcohol.",bb:"🔥 HCV > LCV always. LCV = HCV − (9H × 2442 kJ/kg). Bomb calorimeter = solid/liquid. Boy's = gas. Coal proximate: M-V-A-FC (moisture, volatile, ash, fixed carbon). Ultimate = elemental (C H N S O). Petroleum fractions by boiling point: petrol < naphtha < kerosene < diesel. EXAM TIP: HCV/LCV numerical is 90% guaranteed. Write that formula 5 times now."},
+    {n:5,t:"Spectroscopic Techniques",top:"UV-Vis: Beer's Law A=εcl, chromophore, auxochrome, 4 spectral shifts. IR: stretching (symmetric/asymmetric) and bending (scissoring/rocking/wagging/twisting). Group region vs fingerprint region.",bb:"🌈 Beer's Law: A = εcl. Chromophore = absorbs color. Bathochromic = red shift (longer λ). Hypsochromic = blue shift. Hyperchromic = higher intensity. Hypochromic = lower intensity. IR stretching = bond length change. Bending = bond angle change. Group region: 4000–1500 cm⁻¹. Fingerprint: below 1500. EXAM TIP: Draw spectrophotometer block diagram. All 4 shift names = 1 mark each, every year."},
+    {n:6,t:"Corrosion Science",top:"Dry corrosion (P-B rule), wet corrosion (hydrogen evolution, oxygen absorption, galvanic cell, concentration cell). Prevention: cathodic/anodic protection, hot dipping, cladding, electroplating, cementation.",bb:"🔧 P-B ratio = volume oxide / volume metal. >1 = protective film forms. Galvanic = two metals + electrolyte = less noble one corrodes. Cathodic protection = sacrifice zinc anode (ships). Hot dipping = galvanising (zinc coating). Electroplating = electric current deposits metal. EXAM TIP: P-B ratio values for Cu, Fe, Al, Mg. Prevention methods table. Electroplating cell diagram."},
+  ]},
+  {id:"phy",n:"Engineering Physics",icon:"⚛️",c:"var(--bl)",pill:"p-bl",units:[
+    {n:3,t:"Quantum Mechanics",top:"De Broglie hypothesis (λ=h/mv), Heisenberg Uncertainty Principle, wave function & physical significance, Schrödinger equations, particle in rigid/non-rigid box, tunneling effect, quantum computing intro.",bb:"⚛️ De Broglie: λ = h/mv (every particle has a wavelength). Heisenberg: ΔxΔp ≥ h/4π (can't know position AND momentum perfectly at same time). Wave function ψ: |ψ|² = probability density. Particle in box: En = n²h²/8mL² — only specific energies allowed. Tunneling = particle passes through barrier classical physics says is impossible (STM, tunnel diode, alpha decay). EXAM TIP: Energy formula En = n²h²/8mL² derivation is asked every year. Ratios E₁:E₂:E₃ = 1:4:9."},
+    {n:4,t:"Semiconductor Physics",top:"Band theory, effective mass, Fermi-Dirac distribution, Fermi level positions (intrinsic/extrinsic), PN junction band diagram, barrier potential, ideal diode equation, solar cell IV characteristics, Hall effect.",bb:"💡 Conductors: bands overlap. Insulators: gap >3eV. Semiconductors: gap ~1eV. Fermi level = 50% probability of occupation. N-type: Fermi near conduction band. P-type: near valence band. PN junction: depletion region + built-in potential (~0.7V Si). Hall effect: B ⊥ to current I → Hall voltage VH = IB/ned appears sideways. Tells you carrier type and concentration. EXAM TIP: Draw band diagrams for all 3 material types + PN junction. Hall effect derivation is a regular question."},
+    {n:5,t:"Magnetism & Superconductivity",top:"Diamagnetic/paramagnetic/ferromagnetic classification. Superconductivity: zero resistance, Meissner effect, Type I vs II, Josephson effect, SQUID, critical temperature, applications.",bb:"🧲 Diamagnetic (Cu, Bi): weakly repelled, μr<1. Paramagnetic (Al): weakly attracted, μr>1 slightly. Ferromagnetic (Fe, Ni, Co): strongly attracted, has domains. Above Curie temp → paramagnetic. Superconductivity: below Tc → R = exactly 0. Meissner effect = B = 0 inside (field expelled → levitation). Type I = abrupt transition. Type II = two critical fields, gradual (used in MRI machines). EXAM TIP: Meissner B vs T graph. Type I vs II comparison table is guaranteed every year."},
+    {n:6,t:"NDT & Nanotechnology",top:"NDT classification, ultrasonic (pulse-echo, thickness, flaw detection), radiography, acoustic emission. Nanotechnology: quantum confinement, surface-to-volume ratio, optical/electrical/mechanical properties, applications.",bb:"🔍 NDT = check materials without breaking them. Ultrasonic pulse-echo: sound pulse sent → flaw reflects → time measured → distance calculated. Radiography = X-rays through material, denser flaws absorb more → appear on film. Quantum confinement: electrons trapped → discrete energy levels → different properties at nano scale than bulk. S/V = 6/d for cube — huge at nanoscale → high reactivity. EXAM TIP: Pulse-echo diagram. S/V ratio numerical for different sizes. Advantages of NDT over destructive testing (5 points list)."},
+  ]},
+  {id:"bee",n:"Basic Electrical Engineering",icon:"⚡",c:"var(--go)",pill:"p-go",units:[
+    {n:3,t:"Single Phase AC Circuits",top:"Pure R, L, C circuits. Series RLC, phasor diagrams, resonance (f₀ = 1/2π√LC), impedance Z = √(R²+(XL-XC)²), active/reactive/apparent power, power factor, admittance.",bb:"⚡ ELI the ICE man: In inductor (L), voltage E leads current I. In capacitor (C), current I leads voltage E. Pure R: in phase. XL = 2πfL, XC = 1/(2πfC). Resonance: XL = XC → Z = R (minimum) → max current. Power triangle: P (W) = true, Q (VAR) = reactive, S (VA) = apparent. PF = P/S = cosφ. EXAM TIP: Draw phasor diagrams for all circuit types. Power triangle. Resonance numericals. These are the main 10-mark questions."},
+    {n:4,t:"Polyphase AC & Transformers",top:"3-phase supply, star (VL=√3·Vph) and delta (IL=√3·Iph) connections, power formula. Transformer: EMF equation E=4.44fNΦm, turns ratio, losses, efficiency, voltage regulation, autotransformer.",bb:"🔌 Star: VL = √3·Vph, IL = Iph. Delta: VL = Vph, IL = √3·Iph. Power = √3·VL·IL·cosφ (same for both!). Transformer EMF: E = 4.44fNΦm. Turns ratio a = N1/N2 = V1/V2 = I2/I1. Max efficiency: copper loss = iron loss. Regulation = (VNL − VFL)/VFL × 100. EXAM TIP: Star/Delta two-column table with all formulas. EMF equation derivation. Efficiency numerical with % load and power factor = standard 10-mark pattern."},
+    {n:5,t:"DC Circuits",top:"Network analysis, ideal/practical sources, star-delta conversion, KVL (ΣV=0), KCL (ΣI=0), loop analysis, Superposition theorem, Thevenin's theorem.",bb:"🔋 KVL: sum of all voltages around closed loop = 0. KCL: sum of currents at node = 0. Superposition: one source at a time, deactivate others (V→short circuit, I→open circuit), add results. Thevenin: (1) Remove load. (2) Find open circuit voltage = Vth. (3) Deactivate sources, find Rth from terminals. (4) Replace with Vth + Rth series + load. EXAM TIP: Thevenin is a 10-mark question in literally every exam. Practice 5 problems step by step until automatic."},
+    {n:6,t:"Work, Power, Energy & Batteries",top:"Temperature coefficient of resistance Rt=R₀(1+αΔT), energy conversions (electrical/mechanical/thermal). Lead acid vs Li-ion batteries: construction, charging/discharging, DOD, series-parallel connections.",bb:"🔋 Rt = R₀(1 + αΔT). Conductors: α positive (R increases with T). Semiconductors: α negative (R decreases). Copper α = 0.00393/°C. P = VI = I²R = V²/R. Energy (kWh) = Pt/3,600,000. Lead acid: 2V/cell, heavy, cheap, used in vehicles. Li-ion: 3.6V/cell, light, no memory effect, phones/EVs. DOD: deeper discharge = shorter battery life. Series: V adds. Parallel: Ah adds. EXAM TIP: Temperature resistance numerical. Lead acid vs Li-ion comparison table. Series/parallel battery problems."},
+  ]},
+];
+
+/* TIMETABLE TOPIC BANKS */
+const TT={
+  chem:[
+    {u:3,top:"Polymers — Table: Prep → Properties → Use",ex:"For each polymer write: preparation method, 2 properties, 1 application. PC→bulletproof glass. PHBV→biodegradable. Polyacetylene→conducts electricity. FRP→light strong composites.",tip:"📝 4-column table crammable in 30 min",c:"var(--or)",p:"p-or"},
+    {u:3,top:"Nanomaterials — Graphene, CNT, Quantum Dots",ex:"Graphene: 1 atom layer, 200× stronger than steel. CNT: rolled graphene, single/multi-wall. Quantum dots: semiconductor nanoparticles, size controls bandgap controls color.",tip:"📝 S/V = 6/d — numerical expected",c:"var(--or)",p:"p-or"},
+    {u:4,top:"Calorific Value — HCV, LCV, Both Calorimeters",ex:"HCV = total heat including steam condensation. LCV = HCV − 9H×2442 kJ/kg. Bomb calorimeter = solids/liquids. Boy's gas = gaseous fuels. Draw both instruments.",tip:"📝 Write LCV formula 5 times. Derive it.",c:"var(--or)",p:"p-or"},
+    {u:4,top:"Coal Analysis — Proximate & Ultimate",ex:"Proximate: M (moisture), V (volatile matter), A (ash), FC (fixed carbon). Physical tests. Ultimate: C, H, N, S, O — elemental analysis. Petroleum: crude → distilled by boiling point.",tip:"📝 Proximate = physical. Ultimate = chemical.",c:"var(--or)",p:"p-or"},
+    {u:5,top:"UV-Vis — Beer's Law + 4 Shifts",ex:"Beer's Law: A = εcl. Bathochromic = red (longer λ). Hypsochromic = blue (shorter λ). Hyperchromic = more intense. Hypochromic = less intense. Chromophore absorbs. Auxochrome intensifies.",tip:"📝 Draw single beam spectrophotometer diagram",c:"var(--or)",p:"p-or"},
+    {u:5,top:"IR Spectroscopy — Vibrations & Regions",ex:"Stretching changes bond length (symmetric + asymmetric). Bending changes angle: scissoring, rocking, wagging, twisting. Group region 4000–1500 cm⁻¹. Fingerprint below 1500.",tip:"📝 Draw all 4 bending modes",c:"var(--or)",p:"p-or"},
+    {u:6,top:"Corrosion Types — Dry, Wet, P-B Rule",ex:"Dry: metal + O₂ → oxide film. P-B ratio = oxide vol / metal vol. >1 = protective. Galvanic: two metals + electrolyte = less noble corrodes. Learn 5 metal P-B values.",tip:"📝 P-B values for Cu, Fe, Al, Mg, Na",c:"var(--or)",p:"p-or"},
+    {u:6,top:"Corrosion Prevention — All Methods",ex:"Cathodic protection: sacrificial zinc anode. Anodic: applied current. Hot dipping = galvanising. Electroplating: anode = metal to deposit, cathode = object to coat. Cementation = pack in metal powder.",tip:"📝 Draw simple electroplating cell",c:"var(--or)",p:"p-or"},
+  ],
+  phy:[
+    {u:3,top:"De Broglie & Heisenberg — Formulas + Numericals",ex:"λ = h/mv. Verified by Davisson-Germer electron diffraction. Heisenberg: ΔxΔp ≥ h/4π AND ΔEΔt ≥ h/4π. Find minimum uncertainty in position if momentum uncertainty is given.",tip:"📝 Memorise both Heisenberg forms",c:"var(--bl)",p:"p-bl"},
+    {u:3,top:"Schrödinger + Particle in Box — Derivation",ex:"Time-independent: −ℏ²/2m·d²ψ/dx² + Vψ = Eψ. Box: V=0 inside. Solution: ψn = √(2/L)sin(nπx/L). Energy: En = n²h²/8mL². Key: energy is quantised — only n=1,2,3,... allowed.",tip:"📝 Derive En formula. E ratios = 1:4:9",c:"var(--bl)",p:"p-bl"},
+    {u:4,top:"Band Theory + Fermi Level Positions",ex:"Draw 3 band diagrams. Intrinsic: Fermi at midgap. N-type: Fermi shifts up (near conduction band). P-type: shifts down (near valence band). Effective mass: electron in crystal behaves differently.",tip:"📝 Three diagrams side by side = full marks",c:"var(--bl)",p:"p-bl"},
+    {u:4,top:"PN Junction + Hall Effect Derivation",ex:"PN junction: depletion region at interface. Built-in potential ~0.7V Si. Hall effect: I in x, B in z → VH in y. VH = IB/ned. Hall coefficient RH = 1/ne. Determines if N-type or P-type.",tip:"📝 Hall voltage derivation is a standard Q",c:"var(--bl)",p:"p-bl"},
+    {u:5,top:"Magnetism — Types, Curie Law, Applications",ex:"Dia (Cu,Bi): χ<0, weakly repelled. Para (Al,Na): χ>0 small, weakly attracted. Ferro (Fe,Ni,Co): χ>>0, strongly attracted, domains exist. Above Curie temp: ferro→para.",tip:"📝 Table: Type | Example | χ sign | μr | Application",c:"var(--bl)",p:"p-bl"},
+    {u:5,top:"Superconductivity — Meissner + Type I vs II",ex:"Below Tc: R = 0 exactly. Meissner: B = 0 inside superconductor (perfect diamagnetic). Type I: one Hc, abrupt. Type II: Hc1 and Hc2, vortex state between — this is what's used in MRI.",tip:"📝 Draw B vs T graph. Type I vs II table.",c:"var(--bl)",p:"p-bl"},
+    {u:6,top:"NDT — Ultrasonic Pulse-Echo + Radiography",ex:"Pulse-echo: transmitter → sound pulse → flaw reflects → receiver → time = distance. Thickness measurement: d = v×t/2. Radiography: X-rays, denser material absorbs more, shows on film.",tip:"📝 Draw pulse-echo block diagram",c:"var(--bl)",p:"p-bl"},
+    {u:6,top:"Nanotechnology — Quantum Confinement + S/V",ex:"Quantum confinement: electrons in 3D nano-box → discrete energy levels → different properties than bulk. S/V = 6/d (cube). 10nm cube vs 1μm cube: S/V is 100× higher. Drug delivery: functionalised nanoparticles target cancer cells.",tip:"📝 Calculate S/V for 10nm and 1μm side by side",c:"var(--bl)",p:"p-bl"},
+  ],
+  bee:[
+    {u:3,top:"Pure R, L, C — Phasors + Power",ex:"Pure R: in phase. XL = 2πfL, I lags V 90°. XC = 1/2πfC, I leads V 90°. ELI the ICE man. Power only consumed in R. Draw phasor for each from scratch.",tip:"📝 Draw phasor diagram + power waveform",c:"var(--go)",p:"p-go"},
+    {u:3,top:"Series RLC — Resonance + Power Triangle",ex:"Z = √(R² + (XL-XC)²). Resonance: XL=XC → Z=R(min) → I=max. f₀=1/(2π√LC). Q factor = ω₀L/R. Power triangle: P=VIcosφ, Q=VIsinφ, S=VI. PF=cosφ = P/S.",tip:"📝 Draw power triangle. Resonance numericals.",c:"var(--go)",p:"p-go"},
+    {u:4,top:"Star & Delta — Memorise the Table",ex:"Star(Y): VL=√3·Vph, IL=Iph. Delta(Δ): VL=Vph, IL=√3·Iph. Power=√3·VL·IL·cosφ for BOTH. Phase sequence R-Y-B, 120° apart. Balanced load = equal impedance in each phase.",tip:"📝 Two-column table. No mixing up allowed.",c:"var(--go)",p:"p-go"},
+    {u:4,top:"Transformer — EMF Equation + Efficiency",ex:"E = 4.44fNΦm (from Faraday's law, EMF = N×dΦ/dt, Φ = Φm·sinωt). a = N1/N2 = V1/V2 = I2/I1. Efficiency = Output/(Output+Losses). Max η when copper loss = iron loss.",tip:"📝 EMF derivation + efficiency numerical",c:"var(--go)",p:"p-go"},
+    {u:5,top:"KVL, KCL — Loop Analysis Practice",ex:"KVL: ΣV around loop = 0. KCL: ΣI at node = 0. Loop analysis: assign clockwise currents, write KVL per loop, simultaneous equations. Sign: if current direction matches assumed, positive voltage drop.",tip:"📝 Solve one 2-mesh problem fully",c:"var(--go)",p:"p-go"},
+    {u:5,top:"Thevenin's Theorem — 4-Step Method",ex:"Step 1: Remove load. Step 2: Find Voc = Vth (open circuit voltage). Step 3: Deactivate sources (V→short, I→open), find Rth from terminals. Step 4: Vth + Rth + load → find current.",tip:"📝 Practice until steps are automatic",c:"var(--go)",p:"p-go"},
+    {u:6,top:"Temperature Coefficient + Resistance",ex:"Rt = R₀(1 + αΔT). Conductors: α>0 (R rises). Semiconductors: α<0 (R falls). Given R at 20°C and α, find R at 70°C. Copper α=0.00393, Nichrome=0.0004, Carbon≈negative.",tip:"📝 3 numerical problems on this topic",c:"var(--go)",p:"p-go"},
+    {u:6,top:"Batteries — Lead Acid vs Li-Ion Deep Dive",ex:"Lead acid: Pb+PbO₂+H₂SO₄, 2V/cell, heavy, cheap, recyclable. Li-ion: LiCoO₂, 3.6V/cell, light, no memory effect. DOD: depth of discharge — more discharge = more degradation. Series: V adds. Parallel: Ah adds.",tip:"📝 Comparison table = 5 marks easy",c:"var(--go)",p:"p-go"},
+  ],
+  dsa:[
+    {top:"C++ STL Deep Dive",ex:"vector, map, unordered_map, set, multiset, priority_queue. Know insert, erase, find, lower_bound, upper_bound for each. STL saves ~40% code time in interviews.",tip:"🎯 Solve: Two Sum, Valid Anagram",c:"var(--pu)",p:"p-pu"},
+    {top:"Arrays — Two Pointers + Sliding Window",ex:"Two pointers: l/r converge from ends. Sliding window: expand/shrink window based on condition. Prefix sums: precompute → O(1) range queries. Appears in 60% of OA rounds.",tip:"🎯 Solve: Best Time to Buy Stock, Container With Most Water",c:"var(--pu)",p:"p-pu"},
+    {top:"Binary Search — 3 Templates",ex:"Template 1: exact match. Template 2: find first true. Template 3: find last true. Key insight: binary search works on ANY monotonic function, not just sorted arrays.",tip:"🎯 Solve: Search Rotated Array, Koko Eating Bananas",c:"var(--pu)",p:"p-pu"},
+    {top:"Recursion → Memoization → Bottom-Up DP",ex:"Every DP problem: (1) write naive recursion, (2) add memoisation, (3) convert to iterative. Identify state, transition, and base case. Draw recursion tree first always.",tip:"🎯 Solve: Climbing Stairs, House Robber, Coin Change",c:"var(--pu)",p:"p-pu"},
+    {top:"Linked Lists — All Core Patterns",ex:"Slow/fast pointer: cycle detection, middle node. Reverse in-place: prev/curr/next three pointers. Merge: compare heads, link smaller. These appear in every company's OA.",tip:"🎯 Solve: Reverse LL, Detect Cycle, Merge Sorted",c:"var(--pu)",p:"p-pu"},
+    {top:"Trees — BFS + DFS + BST",ex:"BFS: queue, level by level. DFS: recursion, 3 orders (pre/in/post). BST property: left<root<right always. Every tree problem: think about what info flows down vs up.",tip:"🎯 Solve: Max Depth, Level Order, Validate BST",c:"var(--pu)",p:"p-pu"},
+    {top:"Graph Algorithms — BFS, DFS, Topological Sort",ex:"Adjacency list for sparse graphs. BFS for shortest path (unweighted). DFS for components, cycle detection. Topological sort: all edges go same direction (DAG). Use Kahn's algorithm.",tip:"🎯 Solve: Number of Islands, Course Schedule",c:"var(--pu)",p:"p-pu"},
+    {top:"Dynamic Programming — 2D + Classic Problems",ex:"Grid DP: dp[i][j] depends on neighbours. LCS: dp[i][j] = if match, 1+dp[i-1][j-1], else max(dp[i-1][j], dp[i][j-1]). LIS: for each element, find longest increasing ending here.",tip:"🎯 Solve: Longest Common Subsequence, Edit Distance",c:"var(--pu)",p:"p-pu"},
+  ],
+  apt:[
+    {top:"Percentages — Speed Drills",ex:"% change = (new-old)/old × 100. Successive discounts: (100-a)(100-b)/100 — NOT additive. Target: 15 questions in 20 minutes. Use mental math shortcuts.",tip:"⚡ 15 problems on IndiaBix right now",c:"var(--gr)",p:"p-gr"},
+    {top:"Time, Speed & Distance",ex:"S = D/T. Trains crossing: add lengths for head-on. Boats: downstream = speed+current, upstream = speed-current. Relative speed: same direction subtract, opposite add.",tip:"⚡ Draw diagram for every train/boat problem",c:"var(--gr)",p:"p-gr"},
+    {top:"Logical Reasoning + Arrangements",ex:"Circular: fix one person, arrange rest = (n-1)!. Linear: n!. Blood relations: draw family tree immediately. Statement-conclusion: conclusion must follow ONLY from given statements.",tip:"⚡ Draw circle literally for arrangements",c:"var(--gr)",p:"p-gr"},
+    {top:"Number System + HCF/LCM",ex:"Divisibility: 2(last digit), 3(digit sum div 3), 4(last 2), 9(digit sum div 9), 11(alternating digit sum). HCF×LCM = product of two numbers.",tip:"⚡ Write divisibility rules, test 5 numbers each",c:"var(--gr)",p:"p-gr"},
+    {top:"Time & Work — LCM Method",ex:"LCM method always faster than fractions. LCM of days = total units of work. Each person's rate = LCM/their days. Days together = total units / combined rate.",tip:"⚡ LCM method only. Fractions are slow.",c:"var(--gr)",p:"p-gr"},
+    {top:"Verbal — RC + Error Spotting",ex:"RC: read passage ONCE. Answer from text only, don't assume. Error spotting: subject-verb agreement, tense consistency, prepositions, articles. Read the suspicious part twice.",tip:"⚡ Read last line of each paragraph first for RC",c:"var(--gr)",p:"p-gr"},
+  ],
+  fit:[
+    {top:"Morning workout (see Fitness tab)",ex:"Complete today's scheduled workout. 30–40 min with correct form beats 1 hour sloppily done. Every rep counts. Log it when done for +50 XP.",tip:"💪 Log completion in Fitness tab for XP",c:"var(--pk)",p:"p-pk"},
+    {top:"Evening walk — 30 minutes",ex:"Brisk walking is the most underrated fat-loss tool. 30 min at good pace = 200–250 calories. Most effective AFTER dinner — controls blood sugar spike.",tip:"💪 Walk after dinner = 2× fat loss effect",c:"var(--pk)",p:"p-pk"},
+    {top:"Hydration + Diet check",ex:"Had 3+ litres of water today? Avoided cold drinks? Protein at every meal (daal/eggs/paneer)? Controlled rice/roti portion? Ate within 12-hour window?",tip:"💪 Set up tomorrow's meals tonight",c:"var(--pk)",p:"p-pk"},
+  ]
+};
+
+/* ══════════════════════════════════════════════
+   STATE MANAGEMENT
+══════════════════════════════════════════════ */
+function loadS(){try{return JSON.parse(localStorage.getItem('gos_v4')||'{}')}catch(e){return{}}}
+function saveS(){localStorage.setItem('gos_v4',JSON.stringify(S))}
+let S=loadS();
+const TODAY=new Date().toDateString();
+// Defaults
+const D={name:'',startDate:TODAY,streak:0,bestStreak:0,lastDate:null,prob:0,diffE:0,diffM:0,diffH:0,xp:0,ad:{},tc:{},qi:0,journal:[],tpomo:0,tdpomo:0,ml:{},wp:{},met:{},woDays:0,ub:[],tdDone:false,tdDate:TODAY,tdPomoDate:TODAY,freezes:1,lastFreezeWeek:'',examDates:{},theme:'dark',probLog:[],selectedDiff:'med',startWeight:0,targetWeight:68};
+Object.keys(D).forEach(k=>{if(S[k]===undefined)S[k]=D[k];});
+if(S.tdDate!==TODAY){S.tdDone=false;S.tdDate=TODAY;}
+if(S.tdPomoDate!==TODAY){S.tdpomo=0;S.tdPomoDate=TODAY;}
+// Give freeze if new week
+const thisWeek=wkKey();if(S.lastFreezeWeek!==thisWeek){S.freezes=Math.min(2,(S.freezes||0)+1);S.lastFreezeWeek=thisWeek;}
+saveS();
+
+/* ══════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════ */
+function daysSince(s){const st=s||S;return Math.max(1,Math.floor((new Date()-new Date(st.startDate))/86400000)+1);}
+function getLevel(x){for(let i=LEVELS.length-1;i>=0;i--)if(x>=LEVELS[i].min)return LEVELS[i];return LEVELS[0];}
+function getPhase(d){return PHASES.find(p=>d>=p.s&&d<=p.e)||PHASES[2];}
+function getWeekT(d){return WEEK_TOPICS[Math.min(Math.floor((d-1)/7),WEEK_TOPICS.length-1)];}
+function phIdx(d){return Math.min(Math.floor((d-1)/30),2);}
+function wkKey(){const d=new Date();const j=new Date(d.getFullYear(),0,1);return`${d.getFullYear()}-W${Math.ceil(((d-j)/86400000+j.getDay()+1)/7)}`;}
+function weightLost(s){const vals=s.met?Object.values(s.met).map(m=>m.w).filter(v=>v>0):[];return vals.length>=2?vals[0]-vals[vals.length-1]:0;}
+function toast(m,dur=2500){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function sRand(seed){let s=seed%2147483647;if(s<=0)s+=2147483646;return()=>{s=s*16807%2147483647;return(s-1)/2147483646;};}
+function getEl(id){return document.getElementById(id);}
+function set(id,v){const el=getEl(id);if(el)el.textContent=v;}
+
+/* ══════════════════════════════════════════════
+   CONFETTI
+══════════════════════════════════════════════ */
+function confetti(){const c=getEl('cc');const ctx=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const ps=Array.from({length:60},()=>({x:Math.random()*c.width,y:-10,vx:(Math.random()-.5)*4,vy:Math.random()*3+2,r:Math.random()*4+3,color:['#8b7cf8','#f07040','#3de0a0','#f5c842','#e060b0'][~~(Math.random()*5)],rot:Math.random()*360,rv:(Math.random()-.5)*8}));function draw(){ctx.clearRect(0,0,c.width,c.height);let a=false;ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.rot+=p.rv;p.vy+=0.05;if(p.y<c.height+20)a=true;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.color;ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);ctx.restore();});if(a)requestAnimationFrame(draw);else ctx.clearRect(0,0,c.width,c.height);}draw();}
+
+/* ══════════════════════════════════════════════
+   ONBOARDING
+══════════════════════════════════════════════ */
+function obNext(n){
+  // Validate BEFORE moving away from a step
+  if(n===2){
+    const nm=getEl('ob-name').value.trim();
+    if(!nm){getEl('ob-name').focus();toast('Please enter your name first 😊');return;}
+    S.name=nm;saveS();
+  }
+  if(n===3){
+    const w=parseFloat(getEl('ob-weight').value);
+    if(w){S.startWeight=w;if(!S.met[TODAY])S.met[TODAY]={};S.met[TODAY].w=w;saveS();}
+  }
+  document.querySelectorAll('.onboard-step').forEach(s=>s.classList.remove('on'));
+  getEl('ob'+n).classList.add('on');
+  document.querySelectorAll('.ob-dot').forEach((d,i)=>d.classList.toggle('on',i===n));
+  // Auto-focus inputs on each step
+  setTimeout(()=>{
+    if(n===1)getEl('ob-name').focus();
+    if(n===2)getEl('ob-weight').focus();
+  },100);
+}
+function obFinish(){getEl('onboard').style.display='none';S.onboarded=true;saveS();initApp();}
+function checkOnboard(){
+  if(!S.onboarded){
+    getEl('onboard').style.display='flex';
+    getEl('ob-name').value=S.name||'';
+    getEl('ob-weight').value=S.startWeight||'';
+    getEl('ob-name').addEventListener('keydown',function(e){if(e.key==='Enter')obNext(2);});
+    getEl('ob-weight').addEventListener('keydown',function(e){if(e.key==='Enter')obNext(3);});
+  }else{initApp();}
+}
+
+/* ══════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════ */
+function go(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav-btn,.mn-btn').forEach(b=>b.classList.remove('on'));
+  getEl('page-'+id)?.classList.add('on');
+  if(el)el.classList.add('on');
+  // sync sidebar active state
+  document.querySelectorAll('.nav-btn').forEach(b=>{if((b.getAttribute('onclick')||'').includes(`'${id}'`))b.classList.add('on');});
+  const actions={timetable:()=>genTimetable(false),syllabus:()=>renderSyl(),badges:()=>renderBadges(),progress:()=>renderProgress(),journal:()=>renderJ(),exams:()=>renderExamPage(),problems:()=>renderProbLog()};
+  if(actions[id])actions[id]();
+}
+
+/* ══════════════════════════════════════════════
+   THEME
+══════════════════════════════════════════════ */
+function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',S.theme==='light'?'light':'');saveS();}
+if(S.theme==='light')document.documentElement.setAttribute('data-theme','light');
+
+/* ══════════════════════════════════════════════
+   MOOD + QUOTE
+══════════════════════════════════════════════ */
+function setMood(m){S.ml[TODAY]=m;saveS();document.querySelectorAll('.mood-opt').forEach(b=>b.classList.toggle('sel',(b.getAttribute('onclick')||'').includes(`'${m}'`)));const msgs=MOOD_MSGS[m];getEl('mood-reply').textContent=msgs[~~(Math.random()*msgs.length)];}
+function nextQuote(){S.qi=(S.qi+1)%QUOTES.length;saveS();const el=getEl('qt');if(!el)return;el.style.opacity='0';setTimeout(()=>{el.textContent=QUOTES[S.qi].t;getEl('qa').textContent=QUOTES[S.qi].a;el.style.transition='opacity .3s';el.style.opacity='1';},160);}
+
+/* ══════════════════════════════════════════════
+   TASKS
+══════════════════════════════════════════════ */
+function renderTasks(cid,tasks,prefix,xpv){const el=getEl(cid);if(!el)return;el.innerHTML='';tasks.forEach((t,i)=>{const key=`${TODAY}-${prefix}-${i}`;const done=!!S.tc[key];const d=document.createElement('div');d.className='task'+(done?' done':'');d.onclick=()=>toggleTask(key,prefix,xpv);d.innerHTML=`<div class="tcb">${done?'✓':''}</div><div class="tt">${t}</div><div class="txp">+${xpv}</div>`;el.appendChild(d);});}
+function toggleTask(key,prefix,xpv){const was=!!S.tc[key];S.tc[key]=!was;if(!was){S.xp+=xpv;S.ad[TODAY]=(S.ad[TODAY]||0)+1;toast(`+${xpv} XP 💪`);checkAllDone();checkBadges();}else{S.xp=Math.max(0,S.xp-xpv);S.ad[TODAY]=Math.max(0,(S.ad[TODAY]||1)-1);}saveS();renderHome();}
+function checkAllDone(){const day=daysSince();const pi=phIdx(day);const total=DSA_TASKS[pi].length+4;let done=0;for(let i=0;i<DSA_TASKS[pi].length;i++)if(S.tc[`${TODAY}-dsa-${i}`])done++;for(let i=0;i<4;i++)if(S.tc[`${TODAY}-apt-${i}`])done++;if(done===total&&!S.tdDone){S.tdDone=true;markStreak();confetti();toast('🎉 ALL TASKS DONE! Streak locked!',4000);microWin('All tasks complete! 🎯');}}
+
+/* ══════════════════════════════════════════════
+   STREAK + ACTIONS
+══════════════════════════════════════════════ */
+function markStreak(){if(S.lastDate===TODAY)return;const y=new Date();y.setDate(y.getDate()-1);const yStr=y.toDateString();if(S.lastDate===yStr||!S.lastDate)S.streak+=1;else S.streak=1;if(S.streak>S.bestStreak)S.bestStreak=S.streak;S.lastDate=TODAY;saveS();}
+function useFreeze(){if(S.freezes<=0){toast('No freezes left this week!');return;}if(confirm(`Use a streak freeze? You have ${S.freezes} remaining. This protects your streak for today.`)){S.freezes--;S.lastDate=TODAY;if(S.streak===0)S.streak=1;saveS();renderHome();toast('🧊 Streak freeze used! Streak protected.');}}
+function markDayDone(){markStreak();S.ad[TODAY]=Math.max(S.ad[TODAY]||0,3);S.xp+=20;saveS();renderHome();confetti();toast('🔥 Day done! Streak: '+S.streak);}
+function markWO(){if(S.woDone===TODAY){toast('Already logged!');return;}S.woDays=(S.woDays||0)+1;S.woDone=TODAY;S.xp+=50;S.ad[TODAY]=(S.ad[TODAY]||0)+2;saveS();renderHome();confetti();toast('💪 Workout done! +50 XP');checkBadges();microWin('Workout complete! 💪');}
+
+/* ══════════════════════════════════════════════
+   PROBLEMS
+══════════════════════════════════════════════ */
+let selectedDiff='med';
+function selDiff(d,el){selectedDiff=d;document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');}
+function logProb(){const name=getEl('prob-name').value.trim()||'Problem';const xpMap={easy:15,med:25,hard:40};const xp=xpMap[selectedDiff]||25;S.prob+=1;if(selectedDiff==='easy')S.diffE=(S.diffE||0)+1;if(selectedDiff==='med')S.diffM=(S.diffM||0)+1;if(selectedDiff==='hard')S.diffH=(S.diffH||0)+1;S.xp+=xp;S.wp[wkKey()]=(S.wp[wkKey()]||0)+1;S.ad[TODAY]=(S.ad[TODAY]||0)+1;if(!S.probLog)S.probLog=[];S.probLog.unshift({name,diff:selectedDiff,date:TODAY,day:daysSince()});if(S.probLog.length>50)S.probLog=S.probLog.slice(0,50);saveS();getEl('prob-name').value='';renderHome();renderProbLog();toast(`Problem #${S.prob} logged! +${xp} XP`);checkBadges();microWin(`+${xp} XP from ${selectedDiff} problem! 🧠`);}
+function renderProbLog(){set('d-easy',S.diffE||0);set('d-med',S.diffM||0);set('d-hard',S.diffH||0);set('d-total',S.prob||0);const el=getEl('prob-log');if(!el)return;if(!S.probLog||!S.probLog.length){el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--t3);padding:12px">No problems logged yet.</div>';return;}const cls={easy:'easy',med:'med',hard:'hard'};el.innerHTML=S.probLog.slice(0,20).map(p=>`<div class="task"><div class="tdiff ${cls[p.diff]||'med'}">${p.diff}</div><div class="tt">${p.name}</div><div style="font-family:var(--mono);font-size:9px;color:var(--t3)">Day ${p.day}</div></div>`).join('');}
+
+/* ══════════════════════════════════════════════
+   FITNESS
+══════════════════════════════════════════════ */
+function renderWO(){const day=daysSince();const w=WORKOUTS[day%7];const el=getEl('wo-exs');if(!el)return;set('wo-name',w.n);const pill=getEl('wo-pill');if(pill){pill.className='pill '+w.pill;pill.textContent=w.type;}el.innerHTML=w.exs.map((e,i)=>`<div class="ex-card"><div class="ex-num">${i+1}</div><div class="ex-body"><div class="ex-name">${e.n}</div><div class="ex-sets">${e.s}</div><div class="ex-note">${e.t}</div></div></div>`).join('');}
+function logMet(){const w=parseFloat(getEl('m-w').value);const wt=parseFloat(getEl('m-wt').value);const sl=parseFloat(getEl('m-sl').value);if(!w){toast('Enter your weight!');return;}if(!S.met)S.met={};S.met[TODAY]={w,wt:wt||0,sl:sl||0};saveS();toast('Metrics saved ✓');renderWChart();updateWedding();microWin(`Weight logged: ${w}kg ✓`);}
+function renderWChart(){const el=getEl('w-chart');const sum=getEl('w-sum');if(!el||!S.met)return;const keys=Object.keys(S.met).sort().slice(-10);const vals=keys.map(k=>S.met[k].w||0).filter(v=>v>0);if(!vals.length){el.innerHTML='';if(sum)sum.textContent='Log your weight daily to see progress here.';return;}const mx=Math.max(...vals)+1;const mn=Math.min(...vals)-1;el.innerHTML=vals.map((v,i)=>`<div style="flex:1;background:${i===vals.length-1?'var(--pk)':'rgba(224,96,176,0.3)'};height:${Math.round(((v-mn)/(mx-mn||1))*100)}%;border-radius:3px 3px 0 0;min-height:4px" title="${keys[i]}: ${v}kg"></div>`).join('');const lost=(vals[0]-vals[vals.length-1]).toFixed(1);const target=S.targetWeight||68;const toGo=(vals[vals.length-1]-target).toFixed(1);if(sum)sum.textContent=`Start: ${vals[0]}kg → Now: ${vals[vals.length-1]}kg → Lost: ${lost}kg → Still need: ${Math.max(0,toGo)}kg`;// proj bar
+const proj=getEl('proj-bar');const projL=getEl('proj-label');const targEl=getEl('proj-target');if(proj){const totalToLose=(S.startWeight||vals[0])-target;const pct=totalToLose>0?Math.min(100,Math.round(weightLost(S)/totalToLose*100)):0;proj.style.width=pct+'%';if(projL)projL.textContent=`Progress to target: ${pct}% (${weightLost(S).toFixed(1)}kg lost)`;if(targEl)targEl.textContent=`Target: ${target}kg`;}
+}
+function updateWedding(){const wed=new Date('2025-05-12');const diff=wed-new Date();const days=Math.max(0,Math.floor(diff/86400000));const hrs=Math.max(0,Math.floor((diff%86400000)/3600000));const min=Math.max(0,Math.floor((diff%3600000)/60000));set('wed-d',days);set('wed-h',hrs);set('wed-m',min);set('sb-wed',days+'d');}
+
+/* ══════════════════════════════════════════════
+   EXAM DATES
+══════════════════════════════════════════════ */
+function renderExamPage(){const cards=getEl('exam-cards');const inputs=getEl('exam-inputs');if(cards)cards.innerHTML=EXAMS.map(e=>{const ed=S.examDates&&S.examDates[e.id];const days=ed?Math.max(0,Math.ceil((new Date(ed)-new Date())/86400000)):null;const urgent=days!==null&&days<=7;return`<div class="exam-card" style="border-top:2px solid ${e.c}${urgent?';background:rgba(240,80,96,.06)':''}"><div class="exam-subj">${e.name}</div><div class="exam-days" style="color:${urgent?'var(--re)':e.c}">${days!==null?days:'--'}</div><div class="exam-lbl">days left</div>${ed?`<div style="font-family:var(--mono);font-size:9px;color:var(--t3)">${ed}</div>`:''}</div>`;}).join('');if(inputs)inputs.innerHTML=EXAMS.map(e=>`<div class="met-wrap"><div class="met-lbl">${e.name}</div><input type="date" class="met-in" id="ed-${e.id}" value="${(S.examDates&&S.examDates[e.id])||''}"></div>`).join('');}
+function saveExamDates(){if(!S.examDates)S.examDates={};EXAMS.forEach(e=>{const v=getEl('ed-'+e.id)?.value;if(v)S.examDates[e.id]=v;});saveS();renderExamPage();toast('Exam dates saved ✓');}
+function checkPanicMode(){const pz=getEl('panic-zone');if(!pz||!S.examDates)return;const urgent=EXAMS.filter(e=>{const d=S.examDates[e.id];if(!d)return false;const days=Math.ceil((new Date(d)-new Date())/86400000);return days>=0&&days<=7;});if(urgent.length){pz.innerHTML=`<div class="panic-banner"><div><div class="panic-text">🚨 EXAM MODE — ${urgent.map(e=>e.name).join(' + ')}</div><div class="panic-sub">Exam in ${Math.min(...urgent.map(e=>Math.ceil((new Date(S.examDates[e.id])-new Date())/86400000)))} days. Focus only on syllabus revision + past papers.</div></div><button class="btn btn-ai" onclick="go('syllabus',null)">📚 Open Syllabus</button></div>`;}else pz.innerHTML='';}
+
+/* ══════════════════════════════════════════════
+   TIMETABLE — MEMORY-AWARE
+══════════════════════════════════════════════ */
+function buildMemory(){const day=daysSince();const yestKey=new Date(new Date()-86400000).toDateString();return{day,yestAct:S.ad[yestKey]||0,yestMood:S.ml[yestKey]||'unknown',todayMood:S.ml[TODAY]||'unknown',streak:S.streak,prob:S.prob,xp:S.xp,woDays:S.woDays||0,phase:getPhase(day).n,level:getLevel(S.xp).n,lastJ:S.journal&&S.journal.length?S.journal[0].text.slice(0,120):'',diffH:S.diffH||0,diffM:S.diffM||0,weightLost:weightLost(S).toFixed(1)};}
+function genTimetable(force){
+  const el=getEl('tt-slots');const day=daysSince();const key=day+'_'+TODAY;
+  if(!force&&S.ttKey===key&&el&&el.innerHTML!=='')return;
+  S.ttKey=key;
+  const mem=buildMemory();
+  set('tt-sub',`Day ${day} · Yesterday: ${mem.yestAct} tasks (${mem.yestMood}) · Streak: ${mem.streak}🔥`);
+  const seed=force?Date.now()%99999:day*1337+new Date().getDay()*97;
+  const rand=sRand(seed);
+  const pick=(arr,off)=>{const i=~~(rand()*arr.length);return arr[(i+day+off)%arr.length];};
+  const sels={chem:pick(TT.chem,0),phy:pick(TT.phy,1),bee:pick(TT.bee,2),dsa:pick(TT.dsa,3),apt:pick(TT.apt,4),fit:pick(TT.fit,5)};
+  const sNames={chem:'Chemistry',phy:'Physics',bee:'BEE',dsa:'DSA',apt:'Aptitude',fit:'Fitness'};
+  let t=360;
+  const fmt=m=>{const h=~~(m/60)%24;const mi=m%60;const ap=h>=12?'PM':'AM';const hh=h>12?h-12:h===0?12:h;return`${hh}:${mi===0?'00':String(mi).padStart(2,'0')} ${ap}`;};
+  const slots=[];
+  const brk=(icon,txt,mins)=>{slots.push({b:1,time:fmt(t),icon,txt});t+=mins;};
+  const study=(s,mins)=>{const tp=sels[s];slots.push({b:0,time:fmt(t),s,sname:sNames[s],dur:mins+'m',...tp});t+=mins;};
+  // Low-energy day (missed yesterday) → lighter schedule
+  const light=mem.yestAct<2;
+  // Build schedule
+  brk('🌅','Wake up · water · open this app',20);
+  study('fit',light?20:25);
+  brk('🚿','Freshen up + breakfast',25);
+  study(day%2===0?'chem':'phy',light?35:50);
+  brk('☕','5 min break — no phone',5);
+  study('dsa',light?40:55);
+  brk('🧘','10 min stretch break',10);
+  study('bee',light?30:40);
+  brk('🍽️','Lunch — 40 min',40);
+  study('apt',25);
+  brk('⚡','5 min break',5);
+  study(day%2===0?'phy':'chem',light?25:40);
+  brk('📝','Revise today\'s notes + journal',15);
+  brk('🌙','Done! Mark day complete.',0);
+  if(el)el.innerHTML=slots.map(sl=>{
+    if(sl.b)return`<div class="tt-brk"><span style="font-size:16px">${sl.icon}</span><span style="font-family:var(--mono);font-size:10px;color:var(--t2)">${sl.time}</span><span>${sl.txt}</span></div>`;
+    return`<div class="tt-slot"><div class="tt-time">${sl.time}<br><span style="font-size:9px">${sl.dur}</span></div><div class="tt-body"><div class="tt-subj" style="color:${sl.c}">${sl.sname} <span class="pill ${sl.p}" style="padding:1px 7px;font-size:9px">${sl.s.toUpperCase()}</span></div><div class="tt-topic">${sl.top}</div><div class="tt-explain">${sl.ex}</div><div class="tt-tip">${sl.tip}</div></div></div>`;
+  }).join('');
+  saveS();
+  genAIPlan(mem);
+}
+
+/* ══════════════════════════════════════════════
+   WHATSAPP
+══════════════════════════════════════════════ */
+function sendWA(){
+  const day=daysSince();let msg=`*Grind OS — Day ${day}*\n${new Date().toDateString()}\n🔥 Streak: ${S.streak} | 🧠 Problems: ${S.prob} | ⚡ XP: ${S.xp}\n\n*Today's Schedule:*\n`;
+  document.querySelectorAll('#tt-slots .tt-slot').forEach(sl=>{const time=sl.querySelector('.tt-time')?.textContent?.trim().split('\n')[0]||'';const subj=(sl.querySelector('.tt-subj')?.textContent||'').trim().replace(/\s+/g,' ').slice(0,20);const top=sl.querySelector('.tt-topic')?.textContent||'';msg+=`⏰ ${time} — ${subj}: ${top}\n`;});
+  msg+=`\n💍 Wedding: ${getEl('wed-d')?.textContent||'--'} days away\n_Grind OS — Stay consistent 🚀_`;
+  window.open(`https://wa.me/917355259901?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+/* ══════════════════════════════════════════════
+   AI CALLS
+══════════════════════════════════════════════ */
+async function callAI(prompt,elId){
+  const el=getEl(elId);if(!el)return;
+  el.className='ai-out loading';el.textContent='';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    el.className='ai-out';
+    el.textContent=data.content?.[0]?.text||'No response received.';
+  }catch(e){el.className='ai-out';el.textContent='AI unavailable. Check internet connection.';}
+}
+function buildContext(){const m=buildMemory();return `Student profile:
+- Name: ${S.name||'Student'}
+- Engineering student at SPPU Pune — dropped a year due to failing Engineering Chemistry
+- Backlog subjects: Chemistry, Physics, BEE (Units 3–6 only)
+- Preparing DSA (C++) for internships — target: BMW
+- Fitness goal: lose 15–20 kg by 12 May for uncle's wedding (no gym)
+- Day ${m.day} of 90-day journey
+- Yesterday: ${m.yestAct} tasks done, mood was ${m.yestMood}
+- Current streak: ${m.streak} days
+- Total problems solved: ${m.prob} (Hard: ${m.diffH}, Medium: ${m.diffM})
+- Current level: ${m.level} (${S.xp} XP)
+- Weight lost so far: ${m.weightLost} kg
+- Phase: ${m.phase}
+${m.lastJ?`- Last journal: "${m.lastJ}"`:''}`;}
+function genAIPlan(mem){
+  mem=mem||buildMemory();
+  callAI(`${buildContext()}
+
+Write a SHORT (5–6 lines) personalised daily briefing:
+1. One honest line about yesterday's performance
+2. Most important focus for today based on progress
+3. One fitness/diet tip specific to their wedding deadline
+4. One exam tip (Chemistry/Physics/BEE) if exam is coming up
+5. A direct, real motivational line — not generic
+
+Talk like a friend who knows their situation. Be specific. No fluff.`,'ai-daily');
+}
+function getAIProb(){callAI(`${buildContext()}
+
+Based on their DSA progress:
+- Total: ${S.prob} problems (Easy: ${S.diffE||0}, Medium: ${S.diffM||0}, Hard: ${S.diffH||0})
+- Current level: ${getLevel(S.xp).n}
+- Day ${daysSince()} of journey
+
+Recommend (4–5 lines):
+1. What difficulty they should focus on now and why
+2. 2–3 specific problem names they should solve this week (real LeetCode problems)
+3. Which DSA topic needs most attention based on their phase
+4. One efficiency tip for getting more done in less time`,'ai-prob');}
+function getAIFit(){
+  const weds=Math.max(0,Math.ceil((new Date('2025-05-12')-new Date())/86400000));
+  const wLost=weightLost(S);
+  callAI(`${buildContext()}
+- Wedding in ${weds} days
+- Weight lost so far: ${wLost.toFixed(1)} kg
+- Workouts done: ${S.woDays||0}
+- Today's metrics: ${S.met&&S.met[TODAY]?`Weight: ${S.met[TODAY].w}kg, Waist: ${S.met[TODAY].wt}cm, Sleep: ${S.met[TODAY].sl}hrs`:'not logged today'}
+
+Give SHORT (5–6 lines) honest fitness advice:
+1. Honest assessment — on track for wedding goal?
+2. One specific Indian dietary change for this week
+3. Workout modification or progression needed
+4. Sleep and recovery note
+5. Realistic expectation for next 2 weeks
+
+Name actual Indian foods. Be honest even if numbers are not good.`,'ai-fit');}
+function getAIExam(){
+  const examInfo=EXAMS.map(e=>S.examDates&&S.examDates[e.id]?`${e.name}: ${Math.ceil((new Date(S.examDates[e.id])-new Date())/86400000)} days`:'').filter(Boolean).join(', ');
+  callAI(`${buildContext()}
+Exam schedule: ${examInfo||'not set yet'}
+
+Give a SHORT (5–6 lines) exam preparation strategy:
+1. Priority order for studying the 3 subjects given days remaining
+2. Most important topics to cover first in Chemistry/Physics/BEE (Units 3–6)
+3. How many hours per day minimum for exam prep vs DSA
+4. One technique for memorising formulae quickly
+5. What to do the night before each exam`,'ai-exam');}
+function getAIJ(){const txt=getEl('j-in')?.value?.trim()||'Nothing written today.';const recent=(S.journal||[]).slice(0,3).map(e=>e.text).join(' | ');callAI(`${buildContext()}
+
+Today's journal entry: "${txt}"
+Recent entries (context): "${recent.slice(0,300)}"
+
+Write a SHORT (4–5 lines) honest reflection:
+1. What this reveals about their current state
+2. One pattern noticed (positive or concerning)
+3. One actionable thing for tomorrow
+4. A reframe or perspective shift that genuinely helps
+
+Be warm and honest — like a wise friend, not a therapist.`,'ai-j');}
+function getAIProg(){callAI(`${buildContext()}
+Active study days: ${Object.values(S.ad).filter(v=>v>0).length}
+Best streak ever: ${S.bestStreak}
+Pomodoros: ${S.tpomo||0}
+Weight lost: ${weightLost(S).toFixed(1)}kg
+
+Give a SHORT (6–8 lines) weekly performance review:
+1. Overall assessment — on track or behind?
+2. Strongest area
+3. Weakest area needing urgent attention
+4. Specific numerical targets for next week (problems, workouts, hours)
+5. One strategic priority for the coming week
+
+Be direct. Use numbers. Don't be generic.`,'ai-prog');}
+
+/* ══════════════════════════════════════════════
+   SYLLABUS
+══════════════════════════════════════════════ */
+function renderSyl(){const c=getEl('syl-c');if(c&&c.childElementCount>0)return;if(!c)return;c.innerHTML=SYLLABUS.map(sub=>`<div class="syl-sub"><div class="syl-hdr" onclick="toggleSyl('s-${sub.id}')"><div class="syl-hdr-l"><span style="font-size:18px">${sub.icon}</span><span class="syl-hdr-name">${sub.n}</span><span class="pill ${sub.pill}" style="font-size:10px">Units 3–6</span></div><span style="color:var(--t3)">▾</span></div><div class="syl-body" id="s-${sub.id}">${sub.units.map(u=>`<div class="unit-b" style="border-left-color:${sub.c}"><div class="unit-title">Unit ${u.n}: ${u.t}</div><div class="unit-topics">${u.top}</div><div class="unit-bb">${u.bb}</div></div>`).join('')}</div></div>`).join('');}
+function toggleSyl(id){getEl(id)?.classList.toggle('open');}
+
+/* ══════════════════════════════════════════════
+   BADGES
+══════════════════════════════════════════════ */
+function checkBadges(){if(!S.ub)S.ub=[];const n=[];BADGES.forEach(b=>{if(!S.ub.includes(b.id)&&b.c(S)){S.ub.push(b.id);n.push(b);}});if(n.length){saveS();setTimeout(()=>n.forEach(b=>{toast(`🏅 ${b.n} unlocked!`,3500);confetti();}),500);}}
+function renderBadges(){const g=getEl('badge-grid');if(!g)return;g.innerHTML=BADGES.map(b=>{const on=(S.ub||[]).includes(b.id);return`<div class="badge${on?' on':''}"><span class="badge-icon">${b.i}</span><div class="badge-name">${b.n}</div><div class="badge-desc">${b.d}</div></div>`;}).join('');}
+
+/* ══════════════════════════════════════════════
+   JOURNAL
+══════════════════════════════════════════════ */
+function saveJ(){const txt=getEl('j-in')?.value?.trim();if(!txt){toast('Write something first!');return;}if(!S.journal)S.journal=[];S.journal.unshift({date:TODAY,text:txt,day:daysSince()});if(S.journal.length>100)S.journal=S.journal.slice(0,100);saveS();getEl('j-in').value='';renderJ();toast('Entry saved 📓');checkBadges();}
+function renderJ(){set('j-lbl',`Day ${daysSince()} — ${TODAY}`);const el=getEl('j-list');if(!el)return;if(!S.journal||!S.journal.length){el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--t3);text-align:center;padding:20px">No entries yet. Write after your first study session.</div>';return;}el.innerHTML=S.journal.map(e=>`<div class="j-entry"><div class="j-date">Day ${e.day||'?'} · ${e.date}</div><div class="j-text">${e.text.replace(/\n/g,'<br>')}</div></div>`).join('');}
+
+/* ══════════════════════════════════════════════
+   PROGRESS
+══════════════════════════════════════════════ */
+function renderProgress(){set('pr-a',Object.values(S.ad).filter(v=>v>0).length);set('pr-p',daysSince());set('pr-b',S.bestStreak||S.streak);set('pr-po',S.tpomo||0);
+  const hg=getEl('hmap');if(hg){hg.innerHTML='';const start=new Date(S.startDate);for(let w=0;w<13;w++){const col=document.createElement('div');col.className='hcol';for(let d=0;d<7;d++){const dt=new Date(start);dt.setDate(dt.getDate()+w*7+d);const k=dt.toDateString();const act=S.ad[k]||0;const cell=document.createElement('div');cell.className='hc'+(act>=4?' h3':act>=2?' h2':act>=1?' h1':'')+(k===TODAY?' ht':'');cell.title=`${dt.toDateString()}: ${act}`;col.appendChild(cell);}hg.appendChild(col);}}
+  const pc=getEl('pc');const pl=getEl('pc-l');const weeks=[];for(let i=7;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i*7);const j=new Date(d.getFullYear(),0,1);weeks.push(`${d.getFullYear()}-W${Math.ceil(((d-j)/86400000+j.getDay()+1)/7)}`);}const vals=weeks.map(w=>S.wp[w]||0);const mx=Math.max(...vals,1);if(pc)pc.innerHTML=vals.map((v,i)=>`<div style="flex:1;background:${i===7?'var(--pu)':'rgba(139,124,248,0.25)'};height:${Math.round((v/mx)*100)}%;border-radius:3px 3px 0 0;min-height:${v>0?4:1}px"></div>`).join('');if(pl)pl.innerHTML=weeks.map((_,i)=>`<span>W${i+1}</span>`).join('');
+  const mh=getEl('mood-hist');const em={fire:'🔥',good:'😊',okay:'😐',low:'😔',tired:'😴'};const l7=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);l7.push(d.toDateString());}if(mh)mh.innerHTML=l7.map(d=>`<span title="${d}">${em[S.ml[d]]||'⬜'}</span>`).join('');renderWChart();}
+
+/* ══════════════════════════════════════════════
+   POMODORO
+══════════════════════════════════════════════ */
+const CIRC=2*Math.PI*58;
+let PS={r:false,tot:25*60,rem:25*60,mode:'FOCUS',iv:null};
+function setPomo(m,lbl){if(PS.r)return;PS.tot=m*60;PS.rem=m*60;PS.mode=lbl;set('pomo-mode',lbl);updatePomo();}
+function updatePomo(){const m=~~(PS.rem/60);const s=PS.rem%60;set('pomo-n',`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`);const pct=PS.rem/PS.tot;const arc=getEl('parc');if(arc){arc.style.strokeDashoffset=CIRC*(1-pct);arc.style.stroke=PS.mode==='FOCUS'?'var(--pu)':PS.mode==='DEEP WORK'?'var(--bl)':'var(--gr)';}}
+function togglePomo(){if(PS.r){clearInterval(PS.iv);PS.r=false;set('pomo-start','▶ Start');}else{PS.r=true;set('pomo-start','⏸ Pause');set('pomo-sub',PS.mode==='FOCUS'||PS.mode==='DEEP WORK'?'Phone away. Full focus.':'Rest your eyes.');PS.iv=setInterval(()=>{PS.rem--;updatePomo();if(PS.rem<=0){clearInterval(PS.iv);PS.r=false;set('pomo-start','▶ Start');if(PS.mode!=='BREAK'&&PS.mode!=='LONG BREAK'){S.tpomo+=1;S.tdpomo+=1;S.xp+=30;S.ad[TODAY]=(S.ad[TODAY]||0)+1;saveS();renderHome();toast('Pomodoro done! +30 XP 🍅',3000);checkBadges();microWin(`Pomodoro #${S.tdpomo} done! 🍅`);}else toast('Break over — back to work!',2000);set('pomo-sub','Session complete!');updatePomoUI();}},1000);}}
+function resetPomo(){clearInterval(PS.iv);PS.r=false;PS.rem=PS.tot;set('pomo-start','▶ Start');set('pomo-sub','Choose a session length, then start');updatePomo();}
+function updatePomoUI(){const cnt=S.tdpomo||0;let h='';for(let i=0;i<4;i++)h+=`<span class="pdot${i<cnt?' on':''}"></span>`;const d=getEl('pomo-dots');if(d)d.innerHTML=h;set('pomo-cnt',cnt);set('pomo-total',S.tpomo||0);
+  const fl=getEl('focus-list');if(fl){const day=daysSince();const pi=phIdx(day);fl.innerHTML=DSA_TASKS[pi].map((t,i)=>{const k=`${TODAY}-dsa-${i}`;const done=!!S.tc[k];return`<div class="task${done?' done':''}"><div class="tcb">${done?'✓':''}</div><div class="tt">${t}</div></div>`;}).join('');}}
+
+/* ══════════════════════════════════════════════
+   MICRO WINS
+══════════════════════════════════════════════ */
+const wins=[];function microWin(msg){wins.unshift(msg);if(wins.length>3)wins.pop();const ticker=getEl('wins-ticker');const list=getEl('wins-list');if(!ticker||!list)return;ticker.style.display='block';list.innerHTML=wins.map(w=>`<div class="win-item">✨ ${w}</div>`).join('');}
+
+/* ══════════════════════════════════════════════
+   SETTINGS
+══════════════════════════════════════════════ */
+function populateSettings(){const n=getEl('set-name');const sw=getEl('set-sw');const tw=getEl('set-tw');const sd=getEl('set-sd');if(n)n.value=S.name||'';if(sw)sw.value=S.startWeight||'';if(tw)tw.value=S.targetWeight||68;if(sd)sd.value=S.startDate||TODAY;}
+function saveSettings(){S.name=getEl('set-name')?.value||S.name;const sw=parseFloat(getEl('set-sw')?.value);const tw=parseFloat(getEl('set-tw')?.value);const sd=getEl('set-sd')?.value;if(sw)S.startWeight=sw;if(tw)S.targetWeight=tw;if(sd)S.startDate=sd;saveS();renderHome();toast('Settings saved ✓');}
+function exportData(){const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`grindos_backup_${TODAY.replace(/ /g,'_')}.json`;a.click();toast('Backup downloaded 💾');}
+function importData(){getEl('import-file').click();}
+function doImport(e){const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(confirm('This will replace ALL current data. Sure?')){localStorage.setItem('gos_v4',JSON.stringify(d));location.reload();}}catch{toast('Invalid backup file!');}};r.readAsText(file);}
+function resetAll(){if(confirm('Reset ALL progress? This cannot be undone.')){localStorage.removeItem('gos_v4');location.reload();}}
+
+/* ══════════════════════════════════════════════
+   HOME RENDER
+══════════════════════════════════════════════ */
+function renderHome(){
+  const d=new Date();const h=d.getHours();
+  const name=S.name?`, ${S.name}`:'';
+  set('h-greet',h<12?`Good morning${name}.`:h<17?`Good afternoon${name}.`:`Good evening${name}.`);
+  const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  set('h-date',`${DAYS[d.getDay()]} · ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()} · Day ${daysSince()} of 90`);
+  // stats
+  set('st-s',S.streak);set('st-p',S.prob);set('st-x',S.xp);set('st-d',daysSince());
+  set('st-ps',`E:${S.diffE||0} M:${S.diffM||0} H:${S.diffH||0}`);
+  const lv=getLevel(S.xp);const nx=LEVELS[Math.min(LEVELS.indexOf(lv)+1,LEVELS.length-1)];
+  const xp=Math.min(100,Math.round(((S.xp-lv.min)/(nx.max-lv.min))*100));
+  const xpf=getEl('xp-f');if(xpf)xpf.style.width=xp+'%';set('xp-l',`${S.xp} / ${nx.max} XP`);set('st-xl',lv.n);const lb=getEl('lvl-badge');if(lb)lb.textContent=lv.n;
+  // phase
+  const day=daysSince();const phase=getPhase(day);const topic=getWeekT(day);
+  set('ph-n',phase.n);const pht=getEl('ph-t');if(pht)pht.textContent=`Wk ${Math.ceil(day/7)} · ${topic}`;
+  const pct=Math.round(((day-phase.s)/(phase.e-phase.s))*100);const phf=getEl('ph-f');if(phf)phf.style.width=Math.min(100,Math.max(0,pct))+'%';set('ph-p',Math.min(100,Math.max(0,pct))+'%');set('ph-s',`Day ${phase.s}`);set('ph-e',`Day ${phase.e}`);
+  // tasks
+  const pi=phIdx(day);renderTasks('dsa-t',DSA_TASKS[pi],'dsa',25);renderTasks('apt-t',APT_BANK[pi%3].slice(0,4),'apt',10);
+  // quote
+  const qt=getEl('qt');if(qt){qt.textContent=QUOTES[S.qi%QUOTES.length].t;set('qa',QUOTES[S.qi%QUOTES.length].a);}
+  // mood restore
+  if(S.ml[TODAY])document.querySelectorAll('.mood-opt').forEach(b=>b.classList.toggle('sel',(b.getAttribute('onclick')||'').includes(`'${S.ml[TODAY]}'`)));
+  // sidebar
+  set('sb-st',S.streak);set('sb-day',day);set('sb-probs',S.prob);set('freeze-count',S.freezes||0);
+  // panic mode
+  checkPanicMode();updatePomoUI();
+}
+
+/* ══════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════ */
+function initApp(){renderHome();renderWO();updateWedding();populateSettings();checkBadges();renderProbLog();setInterval(updateWedding,60000);}
+checkOnboard();
+</script>
+</body>
+</html>
